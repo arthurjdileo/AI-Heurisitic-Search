@@ -511,13 +511,13 @@ class world:
             else:
                 exit('ERROR: r1 is equal to ' + r1 + ' terminating from highway creator')
 
-            continue
             #Check length of highway
             if count < 100:
                 continue
 
 def load():
     if(raw_input("Would you like to load a file? (y/n): ") != "y"):
+        randomize()
         return
     with open(input("Please enter the path to input file: "), 'r') as f:
         input_list = f.read().strip().split("\n")
@@ -550,7 +550,12 @@ def unload():
 
         f.write("Highway List: ")
         for pair in highwaylist:
-			f.write(str(pair[0]) + "," + str(pair[1]) + "\n")
+            f.write(str(pair[0])+","+str(pair[1])+"\n")
+
+def randomize():
+    global start
+    global goal
+    global hard_travers
 
 def main():
 	load()
