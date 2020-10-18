@@ -47,16 +47,16 @@ def getHeurisitic(node, heurisitic):
 		return math.sqrt((x1-x2)**2 + (y1-y2)**2)
 	elif heurisitic == "euclidean_squared":
         	return (x1-x2)**2 + (y1-y2)**2
-    	elif heurisitic == "chebyshev":
-        	return abs(x1-x2) + abs(y1-y2) - min(abs(x1-x2),abs(y1-y2))
-    	elif heurisitic == "octile":
-        	return abs(x1-x2) + abs(y1-y2) - (math.sqrt(2)-2) * min(abs(x1-x2),abs(y1-y2))
-    	elif heurisitic == "mini_manhattan":
-        	return (abs(x1-x2) + abs(y1-y2))/4
-    	elif heurisitic == "mini_euclidean":
-        	return math.sqrt((x1-x2)**2 + (y1-y2)**2)/4
+	elif heurisitic == "chebyshev":
+		return abs(x1-x2) + abs(y1-y2) - min(abs(x1-x2),abs(y1-y2))
+	elif heurisitic == "octile":
+		return abs(x1-x2) + abs(y1-y2) - (math.sqrt(2)-2) * min(abs(x1-x2),abs(y1-y2))
+	elif heurisitic == "mini_manhattan":
+		return (abs(x1-x2) + abs(y1-y2))/4
+	elif heurisitic == "mini_euclidean":
+		return math.sqrt((x1-x2)**2 + (y1-y2)**2)/4
 
-def getCost(parent, node) {
+def getCost(parent, node):
 	if node.type == 1:
 		if parent.type == 1:
 			if node.direction == "horiz" || node.direction == "vert":
@@ -89,5 +89,3 @@ def getCost(parent, node) {
             		return 0.5
         	elif parent.type == 'a':
             		return 0.375
-			
-}
