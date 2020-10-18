@@ -1,7 +1,7 @@
 import queue
 import math
 
-def aStarSearch(arr, heurisitic weight):
+def aStarSearch(arr, heurisitic, weight):
 	# when weight == 1: normal A*
 	# when weight > 1: weighted A*
 	closedList = set() # collection of expanded nodes
