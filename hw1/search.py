@@ -59,33 +59,33 @@ def getHeurisitic(node, heurisitic):
 def getCost(parent, node):
 	if node.type == 1:
 		if parent.type == 1:
-			if node.direction == "horiz" || node.direction == "vert":
+			if node.direction == "horiz" or node.direction == "vert":
 				return 1
 			else:
 				return math.sqrt(2)
 		elif parent.type == 2:
-			if node.direction == "horiz" || node.direction == "vert":
+			if node.direction == "horiz" or node.direction == "vert":
 				return 1.5
 			else:
 				return ((math.sqrt(2)+math.sqrt(8))/2)
 	elif node.type == 2:
 		if parent.type == 2:
-			if node.direction == "horiz" || node.direction == "vert":
+			if node.direction == "horiz" or node.direction == "vert":
 				return 2
 			else:
 				return math.sqrt(8)
 		elif parent.type == 1:
-			if node.direction == "horiz" || node.direction == "vert":
+			if node.direction == "horiz" or node.direction == "vert":
 				return 1.5
 			else:
 				return ((math.sqrt(2)+math.sqrt(8))/2)
 	elif node.type == 'a': 
 		if parent.type == 'a':
-            		return 0.25
-        	elif parent.type == 'b':
-            		return 0.375
-    	elif node.type == 'b':
-        	if parent.type == 'b':
-            		return 0.5
-        	elif parent.type == 'a':
-            		return 0.375
+			return 0.25
+		elif parent.type == 'b':
+				return 0.375
+	elif node.type == 'b':
+		if parent.type == 'b':
+				return 0.5
+		elif parent.type == 'a':
+				return 0.375
