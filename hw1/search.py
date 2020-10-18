@@ -1,7 +1,9 @@
 import queue
 import math
 
-def aStarSearch(arr, heurisitic):
+def aStarSearch(arr, heurisitic weight):
+	# when weight == 1: normal A*
+	# when weight > 1: weighted A*
 	closedList = set() # collection of expanded nodes
 	openList = queue.PriorityQueue() # collection of all generated nodes
 	costPerCell = {arr.startPosition: 0} # collection of cost from start to specific node
@@ -25,7 +27,7 @@ def aStarSearch(arr, heurisitic):
 				costPerCell[node] = cost
 				parent[node] = cur
 				closedList.add(node)
-				openList.put((cost + getHeurisitic(node, heurisitic), node))
+				openList.put((cost + weight * getHeurisitic(node, heurisitic), node))
 	return (closedList, None) # path not found
 
 def buildPath(pathDict):
@@ -61,13 +63,21 @@ def getCost(parent, node) {
 			if node.direction == "horiz" || node.direction == "vert":
 				return 2
 			else:
-				return 1.5
+				return math.sqrt(8)
 		elif parent.type == 1:
 			if node.direction == "horiz" || node.direction == "vert":
 				return 1.5
 			else:
 				return ((math.sqrt(2)+math.sqrt(8))/2)
-	elif node.type == 'a' or node.type == 'b':
-		if parent.type == 'a' or parent.type == 'b':
+	elif node.type == 'a': 
+		if parent.type == 'a':
+            		return 0.25
+        	elif parent.type == 'b':
+            		return 0.375
+    	elif node.type == 'b':
+        	if parent.type == 'b':
+            		return 0.5
+        	elif parent.type == 'a':
+            		return 0.375
 			
 }
