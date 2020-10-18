@@ -2,15 +2,6 @@ from random import randint
 import numpy as np
 
 
-
-def wipeHighways(world):
-    for pair in highwaylist:
-        if world.data[pair[0], pair[1]] == 'a':
-            world.data[pair[0], pair[1]] = 1
-        elif world.data[pair[0], pair[1]] == 'b':
-            world.data[pair[0], pair[1]] = 2
-
-
 class world:
     def __init__(self):
         self.data = np.chararray(shape=(120, 160))
@@ -63,493 +54,249 @@ class world:
         #assigns the goal index
         self.data[goal[0],goal[1]] = 'G'
 
-    def wipeHighways(self):
-        for pair in highwaylist:
-            if self.data[pair[0], pair[1]] == 'a':
-                self.data[pair[0], pair[1]] = 1
-            elif self.data[pair[0], pair[1]] == 'b':
-                self.data[pair[0], pair[1]] = 2
-
     def createHighways(self):
         global highwaylist
-        highwaylist = []
-        count = 0
-        for _ in range(4):
-            # Randomly choose to begin at the North, West, South, or East border wall
-            r1 = np.random.randint(0, 3)
-            # The West Border
-            if r1 == 0:
-                # The column coordinate must be 0
-                col = 0
-                # The row coordinate will be a random point along the first column
-                row = np.random.randint(0, 119)
-                # assign either a or b depending on if cell is unblocked(1) or hardToTraverse(2)
-                if self.data[row, col] == '1':
-                    self.data[row, col] = 'a'
-                elif self.data[row, col] == '2':
-                    self.data[row, col] = 'b'
-                # Move the highway away from the boundary for 20 cells
-                pair = [row, col]
-                highwaylist.append(pair)
-                count+=1
-                for _ in range(20):
-                    col += 1
-                    #If the next cell is already a highway, wipe highways and restart
-                    if self.data[row, col] == 'a' or self.data[row, col] == 'b':
-                        #function to wipe highways from map
-                        #Calls itself to make new highways, repeats until no intersection
-                        continue
-                    #if the next cell is not a highway, continue
-                    else:
-                        pair = [row, col]
-                        highwaylist.append(pair)
-                        count+=1
-                        if self.data[row, col] == '1':
-                            self.data[row, col] = 'a'
-                        elif self.data[row, col] == '2':
-                            self.data[row,col] = 'b'
-                #Move the highway with 60% chance of going straight and 20% chance of left/right
-                while 0 <= row and row <= 119 and 0 <= col and col <= 159:
-                    r2 = np.random.randint(0,9)
-                    #60% chance to continue straight
-                    if 0 <= r2 <= 5:
-                        #continues straight for 20 cells
-                        for _ in range(20):
-                            col += 1
-                            if(col < 0 or col > 159):
-                                continue
-                            #If the next cell is already a highway, wipe highways and restart
-                            if self.data[row, col] == 'a' or self.data[row, col] == 'b':
-                                #function to wipe highways from map
-                                #Calls itself to make new highways, repeats until no intersection
-                                continue
-                            #if the next cell is not a highway, continue
-                            else:
-                                pair = [row, col]
-                                highwaylist.append(pair)
-                                count+=1
-                                if self.data[row, col] == '1':
-                                    self.data[row, col] = 'a'
-                                elif self.data[row, col] == '2':
-                                    self.data[row,col] = 'b'
-                    #20% chance to move left/right
-                    #10% chance to move left
-                    elif r2 == 6:
-                        #continues left for 20 cells
-                        for _ in range(20):
-                            row -= 1
-                            if(row < 0 or row > 119):
-                                continue
-                            #If the next cell is already a highway, wipe highways and restart
-                            if self.data[row, col] == 'a' or self.data[row, col] == 'b':
-                                #function to wipe highways from map
-                                #Calls itself to make new highways, repeats until no intersection
-                                continue
-                            #if the next cell is not a highway, continue
-                            else:
-                                pair = [row, col]
-                                highwaylist.append(pair)
-                                count+=1
-                                if self.data[row, col] == '1':
-                                    self.data[row, col] = 'a'
-                                elif self.data[row, col] == '2':
-                                    self.data[row,col] = 'b'
+        highwaylist = [[], [], [], []]
+        for number in range(4):
+            s = randomHighwayStart()
+            row = s[0]
+            col = s[1]
+            #North
+            if s[2] == 0:
+                highwaylist[number] = self.plotNorth(row, col)
+                pass
+            #South
+            elif s[2] == 1:
+                highwaylist[number] = self.plotSouth(row, col)
+                pass
 
-                    #10% chance to move right
-                    elif r2 == 7:
-                        #continues right for 20 cells
-                        for _ in range(20):
-                            row += 1
-                            if(row < 0 or row > 119):
-                                continue
-                            #If the next cell is already a highway, wipe highways and restart
-                            if self.data[row, col] == 'a' or self.data[row, col] == 'b':
-                                #function to wipe highways from map
-                                #Calls itself to make new highways, repeats until no intersection
-                                continue
-                            #if the next cell is not a highway, continue
-                            else:
-                                pair = [row, col]
-                                highwaylist.append(pair)
-                                count+=1
-                                if self.data[row, col] == '1':
-                                    self.data[row, col] = 'a'
-                                elif self.data[row, col] == '2':
-                                    self.data[row,col] = 'b'
-                    #20% chance to stop
-                    else:
-                        pass
+            #East
+            elif s[2] == 2:
+                highwaylist[number] = self.plotEast(row, col)
+                pass
 
-            elif r1 == 1:
-                # The North Border
-                # The row coordinate must be 0
-                row = 0
-                # The column coordinate will be a random point along the first row
-                col = np.random.randint(0, 159)
-                # assign either a or b depending on if cell is unblocked(1) or hardToTraverse(2)
-                if self.data[row, col] == '1':
-                    self.data[row, col] = 'a'
-                elif self.data[row, col] == '2':
-                    self.data[row, col] = 'b'
-                # Move the highway away from the boundary for 20 cells
-                pair = [row, col]
-                highwaylist.append(pair)
-                count+=1
-                for _ in range(20):
-                    row += 1
-                    #If the next cell is already a highway, wipe highways and restart
-                    if self.data[row, col] == 'a' or self.data[row, col] == 'b':
-                        #function to wipe highways from map
-                        #Calls itself to make new highways, repeats until no intersection
-                        continue
-                    #if the next cell is not a highway, continue
-                    else:
-                        pair = [row, col]
-                        highwaylist.append(pair)
-                        count+=1
-                        if self.data[row, col] == '1':
-                            self.data[row, col] = 'a'
-                        elif self.data[row, col] == '2':
-                            self.data[row,col] = 'b'
-                #Move the highway with 60% chance of going straight and 20% chance of left/right
-                while 0 <= row and row <= 119 and 0 <= col and col <= 159:
-                    r2 = np.random.randint(0,9)
-                    #60% chance to continue straight
-                    if 0 <= r2 <= 5:
-                        #continues straight for 20 cells
-                        for _ in range(20):
-                            #straight is down the map
-                            row += 1
-                            if(row < 0 or row > 119):
-                                continue
-                            #If the next cell is already a highway, wipe highways and restart
-                            if self.data[row, col] == 'a' or self.data[row, col] == 'b':
-                                #function to wipe highways from map
-                                #Calls itself to make new highways, repeats until no intersection
-                                continue
-                            #if the next cell is not a highway, continue
-                            else:
-                                pair = [row, col]
-                                highwaylist.append(pair)
-                                count+=1
-                                if self.data[row, col] == '1':
-                                    self.data[row, col] = 'a'
-                                elif self.data[row, col] == '2':
-                                    self.data[row,col] = 'b'
-                    #20% chance to move left/right
-                    #10% chance to move left
-                    elif r2 == 6:
-                        #continues left for 20 cells
-                        for _ in range(20):
-                            col += 1
-                            if(col < 0 or col > 159):
-                                continue
-                            #If the next cell is already a highway, wipe highways and restart
-                            if self.data[row, col] == 'a' or self.data[row, col] == 'b':
-                                #function to wipe highways from map
-                                #Calls itself to make new highways, repeats until no intersection
-                                continue
-                            #if the next cell is not a highway, continue
-                            else:
-                                pair = [row, col]
-                                highwaylist.append(pair)
-                                count+=1
-                                if self.data[row, col] == '1':
-                                    self.data[row, col] = 'a'
-                                elif self.data[row, col] == '2':
-                                    self.data[row,col] = 'b'
+            #West
+            elif s[2] == 3:
+                highwaylist[number] = self.plotWest(row, col)
+                pass
+            if highwaylist[number] == None:
+                number-=1
 
-                    #10% chance to move right
-                    elif r2 == 7:
-                        #continues right for 20 cells
-                        for _ in range(20):
-                            col -= 1
-                            if(col < 0 or col > 159):
-
-
-                                continue
-                            #If the next cell is already a highway, wipe highways and restart
-                            if self.data[row, col] == 'a' or self.data[row, col] == 'b':
-                                #function to wipe highways from map
-
-                                #Calls itself to make new highways, repeats until no intersection
-
-                                continue
-                            #if the next cell is not a highway, continue
-                            else:
-                                pair = [row, col]
-                                highwaylist.append(pair)
-                                count+=1
-                                if self.data[row, col] == '1':
-                                    self.data[row, col] = 'a'
-                                elif self.data[row, col] == '2':
-                                    self.data[row,col] = 'b'
-
-                    #20% chance to stop
-                    else:
-                        pass
-
-            elif r1 == 2:
-                # The East Border
-                # The column coordinate is the last column
-
-                col = len(self.data[0]) - 1
-
-                # The row coordinate will be a random point along the last column
-
-                row = np.random.randint(0, 119)
-
-                # assign either a or b depending on if cell is unblocked(1) or hardToTraverse(2)
-
-                if self.data[row, col] == '1':
-                    self.data[row, col] = 'a'
-                elif self.data[row, col] == '2':
-                    self.data[row, col] = 'b'
-
-                # Move the highway away from the boundary for 20 cells
-                pair = [row, col]
-                highwaylist.append(pair)
-                count+=1
-                for _ in range(20):
-                    col -= 1
-                    #If the next cell is already a highway, wipe highways and restart
-                    if self.data[row, col] == 'a' or self.data[row, col] == 'b':
-                        #function to wipe highways from map
-
-                        #Calls itself to make new highways, repeats until no intersection
-
-                        continue
-                    #if the next cell is not a highway, continue
-                    else:
-                        pair = [row, col]
-                        highwaylist.append(pair)
-                        count+=1
-                        if self.data[row, col] == '1':
-                            self.data[row, col] = 'a'
-                        elif self.data[row, col] == '2':
-                            self.data[row,col] = 'b'
-
-                #Move the highway with 60% chance of going straight and 20% chance of left/right
-                while 0 <= row and row <= 119 and 0 <= col and col <= 159:
-
-                    r2 = np.random.randint(0,9)
-                    #60% chance to continue straight
-                    if 0 <= r2 <= 5:
-                        #continues straight for 20 cells
-                        for _ in range(20):
-                            #straight is down the map
-                            col -= 1
-                            if(col < 0 or col > 159):
-
-
-                                continue
-                            #If the next cell is already a highway, wipe highways and restart
-                            if self.data[row, col] == 'a' or self.data[row, col] == 'b':
-                                #function to wipe highways from map
-
-                                #Calls itself to make new highways, repeats until no intersection
-
-                                continue
-                            #if the next cell is not a highway, continue
-                            else:
-                                pair = [row, col]
-                                highwaylist.append(pair)
-                                count+=1
-                                if self.data[row, col] == '1':
-                                    self.data[row, col] = 'a'
-                                elif self.data[row, col] == '2':
-                                    self.data[row,col] = 'b'
-                    #20% chance to move left/right
-                    #10% chance to move left
-                    elif r2 == 6:
-                        #continues left for 20 cells
-                        for _ in range(20):
-                            row += 1
-                            if(row < 0 or row > 119):
-
-
-                                continue
-                            #If the next cell is already a highway, wipe highways and restart
-                            if self.data[row, col] == 'a' or self.data[row, col] == 'b':
-                                #function to wipe highways from map
-
-                                #Calls itself to make new highways, repeats until no intersection
-
-                                continue
-                            #if the next cell is not a highway, continue
-                            else:
-                                pair = [row, col]
-                                highwaylist.append(pair)
-                                count+=1
-                                if self.data[row, col] == '1':
-                                    self.data[row, col] = 'a'
-                                elif self.data[row, col] == '2':
-                                    self.data[row,col] = 'b'
-
-                    #10% chance to move right
-                    elif r2 == 7:
-                        #continues right for 20 cells
-                        for _ in range(20):
-                            row -= 1
-                            if(row < 0 or row > 159):
-
-
-                                continue
-                            #If the next cell is already a highway, wipe highways and restart
-                            if self.data[row, col] == 'a' or self.data[row, col] == 'b':
-                                #function to wipe highways from map
-
-                                #Calls itself to make new highways, repeats until no intersection
-
-                                continue
-                            #if the next cell is not a highway, continue
-                            else:
-                                pair = [row, col]
-                                highwaylist.append(pair)
-                                count+=1
-                                if self.data[row, col] == '1':
-                                    self.data[row, col] = 'a'
-                                elif self.data[row, col] == '2':
-                                    self.data[row,col] = 'b'
-
-                    #20% chance to stop
-                    else:
-                        pass
-
-            elif r1 == 3:
-                # The South Border
-
-                # The row coordinate will be the last row
-
-                row = len(self.data) - 1
-
-                # The column coordinate will be a random point along the last row
-
-                col = np.random.randint(0, 159)
-
-                # assign either a or b depending on if cell is unblocked(1) or hardToTraverse(2)
-
-                if self.data[row, col] == '1':
-                    self.data[row, col] = 'a'
-                elif self.data[row, col] == '2':
-                    self.data[row, col] = 'b'
-
-                # Move the highway away from the boundary for 20 cells
-                pair = [row, col]
-                highwaylist.append(pair)
-                count+=1
-                for _ in range(20):
-                    row -= 1
-                    #If the next cell is already a highway, wipe highways and restart
-                    if self.data[row, col] == 'a' or self.data[row, col] == 'b':
-                        #function to wipe highways from map
-
-                        #Calls itself to make new highways, repeats until no intersection
-
-                        continue
-                    #if the next cell is not a highway, continue
-                    else:
-                        pair = [row, col]
-                        highwaylist.append(pair)
-                        count+=1
-                        if self.data[row, col] == '1':
-                            self.data[row, col] = 'a'
-                        elif self.data[row, col] == '2':
-                            self.data[row,col] = 'b'
-                #Move the highway with 60% chance of going straight and 20% chance of left/right
-                while 0 <= row and row <= 119 and 0 <= col and col <= 159:
-
-                    r2 = np.random.randint(0,9)
-                    #60% chance to continue straight
-                    if 0 <= r2 <= 5:
-                        #continues straight for 20 cells
-                        for _ in range(20):
-                            #straight is down the map
-                            row -= 1
-                            if(row < 0 or row > 119):
-
-
-                                continue
-                            #If the next cell is already a highway, wipe highways and restart
-                            if self.data[row, col] == 'a' or self.data[row, col] == 'b':
-                                #function to wipe highways from map
-
-                                #Calls itself to make new highways, repeats until no intersection
-
-                                continue
-                            #if the next cell is not a highway, continue
-                            else:
-                                pair = [row, col]
-                                highwaylist.append(pair)
-                                count+=1
-                                if self.data[row, col] == '1':
-                                    self.data[row, col] = 'a'
-                                elif self.data[row, col] == '2':
-                                    self.data[row,col] = 'b'
-                    #20% chance to move left/right
-                    #10% chance to move left
-                    elif r2 == 6:
-                        #continues left for 20 cells
-                        for _ in range(20):
-                            col -= 1
-                            if(col < 0 or col > 159):
-
-
-                                continue
-                            #If the next cell is already a highway, wipe highways and restart
-                            if self.data[row, col] == 'a' or self.data[row, col] == 'b':
-                                #function to wipe highways from map
-
-                                #Calls itself to make new highways, repeats until no intersection
-
-                                continue
-                            #if the next cell is not a highway, continue
-                            else:
-                                pair = [row, col]
-                                highwaylist.append(pair)
-                                count+=1
-                                if self.data[row, col] == '1':
-                                    self.data[row, col] = 'a'
-                                elif self.data[row, col] == '2':
-                                    self.data[row,col] = 'b'
-
-                    #10% chance to move right
-                    elif r2 == 7:
-                        #continues right for 20 cells
-                        for _ in range(20):
-                            col += 1
-                            if(col < 0 or col > 159):
-
-
-                                continue
-                            #If the next cell is already a highway, wipe highways and restart
-                            if self.data[row, col] == 'a' or self.data[row, col] == 'b':
-                                #function to wipe highways from map
-
-                                #Calls itself to make new highways, repeats until no intersection
-
-                                continue
-                            #if the next cell is not a highway, continue
-                            else:
-                                pair = [row, col]
-                                highwaylist.append(pair)
-                                count+=1
-                                if self.data[row, col] == '1':
-                                    self.data[row, col] = 'a'
-                                elif self.data[row, col] == '2':
-                                    self.data[row,col] = 'b'
-
-                    #20% chance to stop
-                    else:
-                        pass
-
+    def plotNorth(self, row, col):
+        curr = []
+        curr.append([row, col])
+        #First 20 extend perpendicular to border
+        for _ in range(20):
+            row+=1
+            if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                return None
             else:
-                exit('ERROR: r1 is equal to ' + r1 + ' terminating from highway creator')
+                curr.append([row,col])
+        #Next 20 60% chance to go straight, 20% chance to diverge until over 100 or wall
+        while len(curr) < 100:
+            r2 = randint(0,7)
+            for _ in range(20):
+                #Goes Straight
+                if 0<=r2<=5:
+                    row+=1
+                    if(not(self.in_bounds([row,col]))):
+                        return curr
+                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                        return None
+                    else:
+                        curr.append([row,col])
+                #Goes left
+                elif r2 == 6:
+                    col+=1
+                    if(not(self.in_bounds([row,col]))):
+                        return curr
+                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                        return None
+                    else:
+                        curr.append([row,col])
+                #Goes right
+                elif r2 == 7:
+                    col-=1
+                    if(not(self.in_bounds([row,col]))):
+                        return curr
+                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                        return None
+                    else:
+                        curr.append([row,col])
 
-            #Check length of highway
-            if count < 100:
-                continue
 
+        for pair in curr:
+            if self.data[pair[0], pair[1]] == '1':
+                self.data[pair[0], pair[1]] = 'a'
+            elif self.data[pair[0], pair[1]] == '2':
+                self.data[pair[0], pair[1]] = 'b'
+        return curr
+
+    def plotSouth(self, row, col):
+        curr = []
+        curr.append([row, col])
+        #First 20 extend perpendicular to border
+        for _ in range(20):
+            row-=1
+            if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                return None
+            else:
+                curr.append([row,col])
+        #Next 20 60% chance to go straight, 20% chance to diverge until over 100 or wall
+        while len(curr) < 100:
+            r2 = randint(0,7)
+            for _ in range(20):
+                #Goes Straight
+                if 0<=r2<=5:
+                    row-=1
+                    if(not(self.in_bounds([row,col]))):
+                        return curr
+                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                        return None
+                    else:
+                        curr.append([row,col])
+                #Goes left
+                elif r2 == 6:
+                    col-=1
+                    if(not(self.in_bounds([row,col]))):
+                        return curr
+                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                        return None
+                    else:
+                        curr.append([row,col])
+                #Goes right
+                elif r2 == 7:
+                    col+=1
+                    if(not(self.in_bounds([row,col]))):
+                        return curr
+                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                        return None
+                    else:
+                        curr.append([row,col])
+        for pair in curr:
+            if self.data[pair[0], pair[1]] == '1':
+                self.data[pair[0], pair[1]] = 'a'
+            elif self.data[pair[0], pair[1]] == '2':
+                self.data[pair[0], pair[1]] = 'b'
+        return curr
+        
+    def plotEast(self, row, col):
+        curr = []
+        curr.append([row, col])
+        #First 20 extend perpendicular to border
+        for _ in range(20):
+            col-=1
+            if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                return None
+            else:
+                curr.append([row,col])
+        #Next 20 60% chance to go straight, 20% chance to diverge until over 100 or wall
+        while len(curr) < 100:
+            r2 = randint(0,7)
+            for _ in range(20):
+                #Goes Straight
+                if 0<=r2<=5:
+                    col-=1
+                    if(not(self.in_bounds([row,col]))):
+                        return curr
+                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                        return None
+                    else:
+                        curr.append([row,col])
+                #Goes left
+                elif r2 == 6:
+                    row+=1
+                    if(not(self.in_bounds([row,col]))):
+                        return curr
+                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                        return None
+                    else:
+                        curr.append([row,col])
+                #Goes right
+                elif r2 == 7:
+                    row-=1
+                    if(not(self.in_bounds([row,col]))):
+                        return curr
+                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                        return None
+                    else:
+                        curr.append([row,col])
+        for pair in curr:
+            if self.data[pair[0], pair[1]] == '1':
+                self.data[pair[0], pair[1]] = 'a'
+            elif self.data[pair[0], pair[1]] == '2':
+                self.data[pair[0], pair[1]] = 'b'
+        return curr
+
+    def plotWest(self, row, col):
+        curr = []
+        curr.append([row, col])
+        #First 20 extend perpendicular to border
+        for _ in range(20):
+            col+=1
+            if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                return None
+            else:
+                curr.append([row,col])
+        #Next 20 60% chance to go straight, 20% chance to diverge until over 100 or wall
+        while len(curr) < 100:
+            r2 = randint(0,7)
+            for _ in range(20):
+                #Goes Straight
+                if 0<=r2<=5:
+                    col+=1
+                    if(not(self.in_bounds([row,col]))):
+                        return curr
+                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                        return None
+                    else:
+                        curr.append([row,col])
+                #Goes left
+                elif r2 == 6:
+                    row-=1
+                    if(not(self.in_bounds([row,col]))):
+                        return curr
+                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                        return None
+                    else:
+                        curr.append([row,col])
+                #Goes right
+                elif r2 == 7:
+                    row+=1
+                    if(not(self.in_bounds([row,col]))):
+                        return curr
+                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                        return None
+                    else:
+                        curr.append([row,col])
+        for pair in curr:
+            if self.data[pair[0], pair[1]] == '1':
+                self.data[pair[0], pair[1]] = 'a'
+            elif self.data[pair[0], pair[1]] == '2':
+                self.data[pair[0], pair[1]] = 'b'
+        return curr
+
+def randomHighwayStart():
+    r1 = randint(0, 3)
+    #North
+    if r1 == 0:
+        cols = randint(0,159)
+        s = [0, cols, r1]
+    #South
+    elif r1 == 1:
+        cols = randint(0,159)
+        s = [119, cols, r1]
+    #East
+    elif r1 == 2:
+        rows = randint(0,119)
+        s = [rows, 159, r1]
+    #West
+    elif r1 == 3:
+        rows = randint(0,119)
+        s = [rows, 0, r1] 
+    else:
+        exit('ERROR: r1 is equal to ' + r1 + ' terminating from highway creator')
+    return s
 def randomize():
     #Defines start and Goal
     global start
