@@ -6,10 +6,11 @@ except ImportError:
 
 # dark gray, white, red, green, light gray
 colors = ['#292929','white', '#EB1717', "#83FF00",  '#9B9898']
-FRAME_WIDTH = 700
-DEFAULT_SIZE = 100
-DEFAULT_PROBABILITY = 0.2
+FRAME_SIZE = 1000
+WEIGHT = 1
 global frame
+
+currentParams = ["", ""]
 
 def draw_handler(canvas):
     pass
@@ -21,25 +22,26 @@ def input_handler():
     pass
 
 def solve_with_a_star_euclidean():
-    pass
+    
 
 def solve_with_a_star_manhattan():
     pass
 
+def setHeurisitic(h):
+    heur.set_text("Current Heurisitic: " + h)
+
 def init():
     global frame
-    frame = simplegui.create_frame("Heuristic Search", FRAME_WIDTH, FRAME_WIDTH)
-    frame.add_button("Generate Map", generateMap, DEFAULT_SIZE)
+    frame = simplegui.create_frame("Heuristic Search", FRAME_SIZE, FRAME_SIZE)
+    frame.add_button("Generate Map", generateMap, 100)
     frame.set_draw_handler(draw_handler)
-    inputSize = frame.add_input('Size', input_handler, 50)
-    inputSize.set_text(str(DEFAULT_SIZE))
-    inputProb = frame.add_input("Probability", input_handler, 50)
-    inputProb.set_text(str(DEFAULT_PROBABILITY))
+    inputWeight = frame.add_input("Weight", input_handler, 50)
+    inputWeight.set_text(str(WEIGHT))
 
     frame.add_label("")
     frame.add_label("Heuristic")
-    frame.add_button("Euclidean", solve_with_a_star_euclidean, 100)
-    frame.add_button("Manhattan", solve_with_a_star_manhattan, 100)
+    frame.add_button("Euclidean", setHeurisitic("Euclidean"), 100)
+    frame.add_button("Manhattan", setHeurisitic("Manhattan"), 100)
 
     frame.add_label("")
     frame.add_label("Search Algorithm")
@@ -49,10 +51,11 @@ def init():
 
     # Display status
     frame.add_label("")
-    algorithm_used = frame.add_label("Current Algorithm: N/A")
-    status_label = frame.add_label("Current Status: N/A")
-    no_of_visited_cells_label = frame.add_label("# of Visited Cells: N/A")
-    path_length_label = frame.add_label("Length of Path: N/A")
+    algo = frame.add_label("Current Algorithm: N/A")
+    heur = frame.add_label("Current Heuristic: N/A")
+    status = frame.add_label("Current Status: N/A")
+    visitedCells = frame.add_label("# of Visited Cells: N/A")
+    pathLen = frame.add_label("Length of Path: N/A")
 
     frame.start()
 

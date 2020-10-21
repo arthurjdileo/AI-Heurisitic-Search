@@ -1,6 +1,6 @@
 from random import randint
 import numpy as np
-
+import search
 
 class world:
     def __init__(self):
@@ -389,6 +389,11 @@ def unload():
 
 def main():
     w = world()
+    w.generateTexture()
+    w.createHighways()
+    w.createBlocked()
+    w.printworld()
+    print(aStarSearch(world, "manhattan", 1))
 
 if __name__ == "__main__":
 	main()
