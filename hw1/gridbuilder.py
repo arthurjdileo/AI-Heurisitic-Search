@@ -6,6 +6,22 @@ class world:
     def __init__(self):
         self.data = np.chararray(shape=(120, 160))
         self.data[:] = '1'
+        load()
+        self.start = start
+        self.goal = goal
+        self.hard_travers = hard_travers
+        self.generateTexture()
+        self.createHighways()
+        self.highwaylist = highwaylist
+        self.createBlocked()
+        self.setSnG()
+
+    def setSnG(self):
+        #assigns the start index
+        self.data[start[0],start[1]] = 'S'
+        #assigns the goal index
+        self.data[goal[0],goal[1]] = 'G'
+
     def printworld(self):
         with open(input("Please enter the path to output file: "), 'w') as f:
             for row in self.data:
@@ -21,11 +37,6 @@ class world:
                 continue
             else:
                 self.data[row,col] = '0'
-
-        #assigns the start index
-        self.data[start[0],start[1]] = 'S'
-        #assigns the goal index
-        self.data[goal[0],goal[1]] = 'G'
     def in_bounds(self, cell):
         x = cell[0]
         y = cell[1]
@@ -377,13 +388,7 @@ def unload():
             f.write(str(pair[0])+","+str(pair[1])+ "\n")
 
 def main():
-    load()
     w = world()
-    w.generateTexture()
-    w.createHighways()
-    w.createBlocked()
-    w.printworld()
-
 
 if __name__ == "__main__":
 	main()
