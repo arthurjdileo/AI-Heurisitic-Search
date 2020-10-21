@@ -451,16 +451,18 @@ def unload():
 			f.write(str(pair[0])+","+str(pair[1])+ "\n")
 
 # search
+w = world()
+
 def aStarSearch(world, heurisitic, weight):
 	# when weight == 1: normal A*
 	# when weight > 1: weighted A*
 	closedList = set() # collection of expanded nodes
 	openList = queue.PriorityQueue() # collection of all generated nodes
-	costPerCell = {start: 0} # collection of cost from start to specific node
+	costPerCell = {w.data[w.start[0], w.start[1]]: 0} # collection of cost from start to specific node
 	parent = {}
 
-	closedList.add(start)
-	openList.put((0, start))
+	closedList.add(tuple(start))
+	openList.put((0, tuple(start)))
 
 	while not openList.empty():
 		# get next in open list and set as current node
@@ -471,7 +473,7 @@ def aStarSearch(world, heurisitic, weight):
 			# return visited nodes and path
 			return (closedList, p)
 		
-		for node in world.connected_cells(cur):
+		for node in world.connected_cells(None, cur):
 			cost = costPerCell[cur] + getCost(world, parent, node)
 			if node not in closedList:
 				costPerCell[node] = cost
@@ -490,13 +492,13 @@ def createPath(parent):
 
 def getHeurisitic(node, heurisitic):
 	x1, y1 = node.x, node.y
-	x2, y2 = gridbuilder.goal[0], gridbuilder.goal[1]
+	x2, y2 = w.goal[0], w.goal[1]
 	if heurisitic == "manhattan":
 		return abs(x1-x2) + abs(y1-y2)
 	elif heurisitic == "euclidean":
 		return math.sqrt((x1-x2)**2 + (y1-y2)**2)
 	elif heurisitic == "euclidean_squared":
-			return (x1-x2)**2 + (y1-y2)**2
+        	return (x1-x2)**2 + (y1-y2)**2
 	elif heurisitic == "chebyshev":
 		return abs(x1-x2) + abs(y1-y2) - min(abs(x1-x2),abs(y1-y2))
 	elif heurisitic == "octile":
@@ -509,7 +511,6 @@ def getHeurisitic(node, heurisitic):
 def getCost(world, parent, node):
 	cellType = world.data[node[0], node[1]]
 	parentType = world.data[parent[0], parent[1]]
-	return 1
 	if cellType == '1':
 		if parentType == '1':
 			if node.direction == "horiz" or node.direction == "vert":
