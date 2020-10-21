@@ -9,17 +9,23 @@ class world:
     def printworld(self):
         with open(input("Please enter the path to output file: "), 'w') as f:
             for row in self.data:
-                f.write(row)
+                f.write(str(row, 'utf-8'))
                 f.write('\n')
     def createBlocked(self):
         #assign 20% of total board to blocked
         for cell in range(3840):
             row = randint(0,119)
             col = randint(0,159)
-            if(self.data[row,col] == 'a' or self.data[row,col] == 'b'):
+            if(self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b'):
                 cell-=1
+                continue
             else:
                 self.data[row,col] = '0'
+
+        #assigns the start index
+        self.data[start[0],start[1]] = 'S'
+        #assigns the goal index
+        self.data[goal[0],goal[1]] = 'G'
     def in_bounds(self, cell):
         x = cell[0]
         y = cell[1]
@@ -49,10 +55,6 @@ class world:
                             continue
                         else:
                             self.data[x, y] = '2'
-        #assigns the start index
-        self.data[start[0],start[1]] = 'S'
-        #assigns the goal index
-        self.data[goal[0],goal[1]] = 'G'
 
     def createHighways(self):
         global highwaylist
@@ -79,8 +81,14 @@ class world:
             elif s[2] == 3:
                 highwaylist[number] = self.plotWest(row, col)
                 pass
-            if highwaylist[number] == None:
+            if highwaylist[number] == None or len(highwaylist[number]) < 100:
                 number-=1
+            else:
+                for pair in highwaylist[number]:
+                    if self.data[pair[0], pair[1]].decode() == '1':
+                        self.data[pair[0], pair[1]] = 'a'
+                    elif self.data[pair[0], pair[1]].decode() == '2':
+                        self.data[pair[0], pair[1]] = 'b'
 
     def plotNorth(self, row, col):
         curr = []
@@ -88,7 +96,7 @@ class world:
         #First 20 extend perpendicular to border
         for _ in range(20):
             row+=1
-            if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+            if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
                 return None
             else:
                 curr.append([row,col])
@@ -101,7 +109,7 @@ class world:
                     row+=1
                     if(not(self.in_bounds([row,col]))):
                         return curr
-                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
                         return None
                     else:
                         curr.append([row,col])
@@ -110,7 +118,7 @@ class world:
                     col+=1
                     if(not(self.in_bounds([row,col]))):
                         return curr
-                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
                         return None
                     else:
                         curr.append([row,col])
@@ -119,17 +127,13 @@ class world:
                     col-=1
                     if(not(self.in_bounds([row,col]))):
                         return curr
-                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
                         return None
                     else:
                         curr.append([row,col])
 
 
-        for pair in curr:
-            if self.data[pair[0], pair[1]] == '1':
-                self.data[pair[0], pair[1]] = 'a'
-            elif self.data[pair[0], pair[1]] == '2':
-                self.data[pair[0], pair[1]] = 'b'
+
         return curr
 
     def plotSouth(self, row, col):
@@ -138,7 +142,7 @@ class world:
         #First 20 extend perpendicular to border
         for _ in range(20):
             row-=1
-            if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+            if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
                 return None
             else:
                 curr.append([row,col])
@@ -151,7 +155,7 @@ class world:
                     row-=1
                     if(not(self.in_bounds([row,col]))):
                         return curr
-                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
                         return None
                     else:
                         curr.append([row,col])
@@ -160,7 +164,7 @@ class world:
                     col-=1
                     if(not(self.in_bounds([row,col]))):
                         return curr
-                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
                         return None
                     else:
                         curr.append([row,col])
@@ -169,15 +173,11 @@ class world:
                     col+=1
                     if(not(self.in_bounds([row,col]))):
                         return curr
-                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
                         return None
                     else:
                         curr.append([row,col])
-        for pair in curr:
-            if self.data[pair[0], pair[1]] == '1':
-                self.data[pair[0], pair[1]] = 'a'
-            elif self.data[pair[0], pair[1]] == '2':
-                self.data[pair[0], pair[1]] = 'b'
+
         return curr
         
     def plotEast(self, row, col):
@@ -186,7 +186,7 @@ class world:
         #First 20 extend perpendicular to border
         for _ in range(20):
             col-=1
-            if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+            if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
                 return None
             else:
                 curr.append([row,col])
@@ -199,7 +199,7 @@ class world:
                     col-=1
                     if(not(self.in_bounds([row,col]))):
                         return curr
-                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
                         return None
                     else:
                         curr.append([row,col])
@@ -208,7 +208,7 @@ class world:
                     row+=1
                     if(not(self.in_bounds([row,col]))):
                         return curr
-                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
                         return None
                     else:
                         curr.append([row,col])
@@ -217,15 +217,10 @@ class world:
                     row-=1
                     if(not(self.in_bounds([row,col]))):
                         return curr
-                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
                         return None
                     else:
                         curr.append([row,col])
-        for pair in curr:
-            if self.data[pair[0], pair[1]] == '1':
-                self.data[pair[0], pair[1]] = 'a'
-            elif self.data[pair[0], pair[1]] == '2':
-                self.data[pair[0], pair[1]] = 'b'
         return curr
 
     def plotWest(self, row, col):
@@ -234,7 +229,7 @@ class world:
         #First 20 extend perpendicular to border
         for _ in range(20):
             col+=1
-            if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+            if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
                 return None
             else:
                 curr.append([row,col])
@@ -247,7 +242,7 @@ class world:
                     col+=1
                     if(not(self.in_bounds([row,col]))):
                         return curr
-                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
                         return None
                     else:
                         curr.append([row,col])
@@ -256,7 +251,7 @@ class world:
                     row-=1
                     if(not(self.in_bounds([row,col]))):
                         return curr
-                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
                         return None
                     else:
                         curr.append([row,col])
@@ -265,15 +260,11 @@ class world:
                     row+=1
                     if(not(self.in_bounds([row,col]))):
                         return curr
-                    if self.data[row,col] == 'a' or self.data[row,col] == 'b' :
+                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
                         return None
                     else:
                         curr.append([row,col])
-        for pair in curr:
-            if self.data[pair[0], pair[1]] == '1':
-                self.data[pair[0], pair[1]] = 'a'
-            elif self.data[pair[0], pair[1]] == '2':
-                self.data[pair[0], pair[1]] = 'b'
+
         return curr
 
 def randomHighwayStart():
@@ -369,7 +360,6 @@ def load():
         for pair in hard_travers:
             pair[0] = int(pair[0])
             pair[1] = int(pair[1])
-        global highwaylist
 
 def unload():
     with open(input("Please enter the path to output file: "), 'w') as f:
