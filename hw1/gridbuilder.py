@@ -492,8 +492,12 @@ def createPath(parent):
 	return path[::-1]
 
 def getHeuristic(w, node, heuristic):
+	if node == None:
+		print("THE NODE")
 	x1, y1 = node[0], node[1]
 	x2, y2 = w.goal[0], w.goal[1]
+	if x1 == None or y1 == None:
+		print("The coordinates!")
 	if heuristic.lower() == "manhattan":
 		return abs(x1-x2) + abs(y1-y2)
 	elif heuristic.lower() == "euclidean":
@@ -563,6 +567,7 @@ def input_handler():
 def drawMap(canvas):
 	w = FRAME_SIZE / 120
 	global solution, path
+	path = ()
 	for r in range(120):
 		for c in range(160):
 			pts = [(r * w, c * w), ((r + 1) * w, c * w),
