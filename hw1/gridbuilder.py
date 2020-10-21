@@ -451,7 +451,6 @@ def unload():
 			f.write(str(pair[0])+","+str(pair[1])+ "\n")
 
 # search
-w = world()
 
 def aStarSearch(world, heuristic, weight):
 	# when weight == 1: normal A*
@@ -481,7 +480,7 @@ def aStarSearch(world, heuristic, weight):
 				costPerCell[node] = cost
 				parent[node] = cur
 				closedList.add(node)
-				openList.put((cost + (weight * getHeuristic(node, heuristic)), node))
+				openList.put((cost + (weight * getHeuristic(world, node, heuristic)), node))
 	return closedList, None # path not found
 
 def createPath(parent):
@@ -492,7 +491,7 @@ def createPath(parent):
 		cur = parent[cur]
 	return path[::-1]
 
-def getHeuristic(node, heuristic):
+def getHeuristic(w, node, heuristic):
 	x1, y1 = node[0], node[1]
 	x2, y2 = w.goal[0], w.goal[1]
 	if heuristic.lower() == "manhattan":
