@@ -8,432 +8,432 @@ except ImportError:
 	import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
 
 class world:
-    def __init__(self):
-        self.data = np.chararray(shape=(120, 160))
-        self.data[:] = '1'
-        load(self)
-        self.start = start
-        self.goal = goal
-        self.hard_travers = hard_travers
-        self.generateTexture()
-        self.createHighways()
-        self.highwaylist = highwaylist
-        self.createBlocked()
-        self.setSnG()
+	def __init__(self):
+		self.data = np.chararray(shape=(120, 160))
+		self.data[:] = '1'
+		load(self)
+		self.start = start
+		self.goal = goal
+		self.hard_travers = hard_travers
+		self.generateTexture()
+		self.createHighways()
+		self.highwaylist = highwaylist
+		self.createBlocked()
+		self.setSnG()
 
-    def rotateSnG(self):
-        self.data[self.start[0], self.start[1]] = '1'
-        self.data[self.goal[0], self.goal[1]] = '1'
+	def rotateSnG(self):
+		self.data[self.start[0], self.start[1]] = '1'
+		self.data[self.goal[0], self.goal[1]] = '1'
 
-        #Defines start and Goal
-        global start
-        start = [None, None]
-        global goal
-        goal = [None, None]
+		#Defines start and Goal
+		global start
+		start = [None, None]
+		global goal
+		goal = [None, None]
 
-        r1 = randint(0,3)
-        #North
-        if r1 == 0:
-            rows = randint(0,19)
-            cols = randint(0,159)
-            rowg = randint(99,119)
-            colg = randint(0,159)
-            start = [rows, cols]
-            goal = [rowg, colg]
-        #South
-        elif r1 == 1:
-            rows = randint(99,119)
-            cols = randint(0,159)
-            rowg = randint(0,19)
-            colg = randint(0,159)
-            start = [rows, cols]
-            goal = [rowg, colg]
-        #East
-        elif r1 == 2:
-            rows = randint(0,119)
-            cols = randint(139,159)
-            rowg = randint(0,119)
-            colg = randint(0,19)
-            start = [rows, cols]
-            goal = [rowg, colg]
-        #West
-        elif r1 == 3:
-            rows = randint(0,119)
-            cols = randint(0,19)
-            rowg = randint(0,119)
-            colg = randint(139,159)
-            start = [rows, cols]
-            goal = [rowg, colg]
-        
-        if self.data[start[0], start[1]] == '0' or self.data[goal[0], goal[1]] == '0' or self.data[start[0], start[1]] == 'a' or self.data[goal[0], goal[1]] == 'a' or self.data[start[0], start[1]] == 'b' or self.data[goal[0], goal[1]] == 'b':
-            randomize(self)
-        self.setSnG()
-
-
-
-
-    def setSnG(self):
-        #assigns the start index
-        self.data[start[0],start[1]] = 'S'
-        #assigns the goal index
-        self.data[goal[0],goal[1]] = 'G'
-
-    def printworld(self):
-        with open(input("Please enter the path to output file: "), 'w') as f:
-            for row in self.data:
-                f.write(str(row, 'utf-8'))
-                f.write('\n')
-    def createBlocked(self):
-        #assign 20% of total board to blocked
-        for cell in range(3840):
-            row = randint(0,119)
-            col = randint(0,159)
-            if(self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b'):
-                cell-=1
-                continue
-            else:
-                self.data[row,col] = '0'
-    def in_bounds(self, cell):
-        x = cell[0]
-        y = cell[1]
-        if(0<=x<=119) and (0<=y<=159):
-            return True
-        else:
-            return False
-    def connected_cells(self, cell):
-        #cell is a list [row, col]
-        x = cell[0]
-        y = cell[1]
-        connected_cells = set()
-        #Highway
-        if self.data[x, y] == 'a' or self.data[x, y] == 'b':
-            all_possible = [(x, y+1), (x, y-1), (x+1, y), (x-1, y)]
-        #NotHighway
-        else:
-            all_possible = [(x, y+1), (x, y-1), (x+1, y+1), (x+1, y), (x+1, y-1), (x-1, y), (x-1, y+1), (x-1, y-1)]
-        for (row, col) in all_possible:
-            if self.in_bounds((row,col)):
-                if self.data[row,col] != '0':
-                    connected_cells.add((row,col))
-        return connected_cells
-    def generateTexture(self):
-        #Start, Goal, and hard_travers can all be found in load as global variables
-        #randonly assign hard to traverse cells to the 31x31 grid surrounding the centers in hard_travers
-        for pair in hard_travers:
-            for x in range(pair[0]-15, pair[0]+15):
-                for y in range(pair[1]-15, pair[1]+15):
-                    if randint(0,1) == 1 and x>=0 and x<=119 and y>=0 and y<=159:
-                        if (start[0] == x and start[1] == y) or (goal[0] == x and goal[1] == y):
-                            continue
-                        else:
-                            self.data[x, y] = '2'
-
-    def createHighways(self):
-        global highwaylist
-        highwaylist = [[], [], [], []]
-        for number in range(4):
-            s = randomHighwayStart()
-            row = s[0]
-            col = s[1]
-            #North
-            if s[2] == 0:
-                highwaylist[number] = self.plotNorth(row, col)
-                pass
-            #South
-            elif s[2] == 1:
-                highwaylist[number] = self.plotSouth(row, col)
-                pass
-
-            #East
-            elif s[2] == 2:
-                highwaylist[number] = self.plotEast(row, col)
-                pass
-
-            #West
-            elif s[2] == 3:
-                highwaylist[number] = self.plotWest(row, col)
-                pass
-            if highwaylist[number] == None or len(highwaylist[number]) < 100:
-                number-=1
-            else:
-                for pair in highwaylist[number]:
-                    if self.data[pair[0], pair[1]].decode() == '1':
-                        self.data[pair[0], pair[1]] = 'a'
-                    elif self.data[pair[0], pair[1]].decode() == '2':
-                        self.data[pair[0], pair[1]] = 'b'
-
-    def plotNorth(self, row, col):
-        curr = []
-        curr.append([row, col])
-        #First 20 extend perpendicular to border
-        for _ in range(20):
-            row+=1
-            if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
-                return None
-            else:
-                curr.append([row,col])
-        #Next 20 60% chance to go straight, 20% chance to diverge until over 100 or wall
-        while len(curr) < 100:
-            r2 = randint(0,7)
-            for _ in range(20):
-                #Goes Straight
-                if 0<=r2<=5:
-                    row+=1
-                    if(not(self.in_bounds([row,col]))):
-                        return curr
-                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
-                        return None
-                    else:
-                        curr.append([row,col])
-                #Goes left
-                elif r2 == 6:
-                    col+=1
-                    if(not(self.in_bounds([row,col]))):
-                        return curr
-                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
-                        return None
-                    else:
-                        curr.append([row,col])
-                #Goes right
-                elif r2 == 7:
-                    col-=1
-                    if(not(self.in_bounds([row,col]))):
-                        return curr
-                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
-                        return None
-                    else:
-                        curr.append([row,col])
+		r1 = randint(0,3)
+		#North
+		if r1 == 0:
+			rows = randint(0,19)
+			cols = randint(0,159)
+			rowg = randint(99,119)
+			colg = randint(0,159)
+			start = [rows, cols]
+			goal = [rowg, colg]
+		#South
+		elif r1 == 1:
+			rows = randint(99,119)
+			cols = randint(0,159)
+			rowg = randint(0,19)
+			colg = randint(0,159)
+			start = [rows, cols]
+			goal = [rowg, colg]
+		#East
+		elif r1 == 2:
+			rows = randint(0,119)
+			cols = randint(139,159)
+			rowg = randint(0,119)
+			colg = randint(0,19)
+			start = [rows, cols]
+			goal = [rowg, colg]
+		#West
+		elif r1 == 3:
+			rows = randint(0,119)
+			cols = randint(0,19)
+			rowg = randint(0,119)
+			colg = randint(139,159)
+			start = [rows, cols]
+			goal = [rowg, colg]
+		
+		if self.data[start[0], start[1]] == '0' or self.data[goal[0], goal[1]] == '0' or self.data[start[0], start[1]] == 'a' or self.data[goal[0], goal[1]] == 'a' or self.data[start[0], start[1]] == 'b' or self.data[goal[0], goal[1]] == 'b':
+			randomize(self)
+		self.setSnG()
 
 
 
-        return curr
 
-    def plotSouth(self, row, col):
-        curr = []
-        curr.append([row, col])
-        #First 20 extend perpendicular to border
-        for _ in range(20):
-            row-=1
-            if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
-                return None
-            else:
-                curr.append([row,col])
-        #Next 20 60% chance to go straight, 20% chance to diverge until over 100 or wall
-        while len(curr) < 100:
-            r2 = randint(0,7)
-            for _ in range(20):
-                #Goes Straight
-                if 0<=r2<=5:
-                    row-=1
-                    if(not(self.in_bounds([row,col]))):
-                        return curr
-                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
-                        return None
-                    else:
-                        curr.append([row,col])
-                #Goes left
-                elif r2 == 6:
-                    col-=1
-                    if(not(self.in_bounds([row,col]))):
-                        return curr
-                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
-                        return None
-                    else:
-                        curr.append([row,col])
-                #Goes right
-                elif r2 == 7:
-                    col+=1
-                    if(not(self.in_bounds([row,col]))):
-                        return curr
-                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
-                        return None
-                    else:
-                        curr.append([row,col])
+	def setSnG(self):
+		#assigns the start index
+		self.data[start[0],start[1]] = 'S'
+		#assigns the goal index
+		self.data[goal[0],goal[1]] = 'G'
 
-        return curr
-        
-    def plotEast(self, row, col):
-        curr = []
-        curr.append([row, col])
-        #First 20 extend perpendicular to border
-        for _ in range(20):
-            col-=1
-            if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
-                return None
-            else:
-                curr.append([row,col])
-        #Next 20 60% chance to go straight, 20% chance to diverge until over 100 or wall
-        while len(curr) < 100:
-            r2 = randint(0,7)
-            for _ in range(20):
-                #Goes Straight
-                if 0<=r2<=5:
-                    col-=1
-                    if(not(self.in_bounds([row,col]))):
-                        return curr
-                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
-                        return None
-                    else:
-                        curr.append([row,col])
-                #Goes left
-                elif r2 == 6:
-                    row+=1
-                    if(not(self.in_bounds([row,col]))):
-                        return curr
-                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
-                        return None
-                    else:
-                        curr.append([row,col])
-                #Goes right
-                elif r2 == 7:
-                    row-=1
-                    if(not(self.in_bounds([row,col]))):
-                        return curr
-                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
-                        return None
-                    else:
-                        curr.append([row,col])
-        return curr
+	def printworld(self):
+		with open(input("Please enter the path to output file: "), 'w') as f:
+			for row in self.data:
+				f.write(str(row, 'utf-8'))
+				f.write('\n')
+	def createBlocked(self):
+		#assign 20% of total board to blocked
+		for cell in range(3840):
+			row = randint(0,119)
+			col = randint(0,159)
+			if(self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b'):
+				cell-=1
+				continue
+			else:
+				self.data[row,col] = '0'
+	def in_bounds(self, cell):
+		x = cell[0]
+		y = cell[1]
+		if(0<=x<=119) and (0<=y<=159):
+			return True
+		else:
+			return False
+	def connected_cells(self, cell):
+		#cell is a list [row, col]
+		x = int(cell[0])
+		y = int(cell[1])
+		connected_cells = list()
+		#Highway
+		if self.data[x, y] == 'a' or self.data[x, y] == 'b':
+			all_possible = [(x, y+1), (x, y-1), (x+1, y), (x-1, y)]
+		#NotHighway
+		else:
+			all_possible = [(x, y+1), (x, y-1), (x+1, y+1), (x+1, y), (x+1, y-1), (x-1, y), (x-1, y+1), (x-1, y-1)]
+		for (row, col) in all_possible:
+			if self.in_bounds((row,col)):
+				if self.data[row,col] != '0':
+					connected_cells.append((row,col))
+		return connected_cells
+	def generateTexture(self):
+		#Start, Goal, and hard_travers can all be found in load as global variables
+		#randonly assign hard to traverse cells to the 31x31 grid surrounding the centers in hard_travers
+		for pair in hard_travers:
+			for x in range(pair[0]-15, pair[0]+15):
+				for y in range(pair[1]-15, pair[1]+15):
+					if randint(0,1) == 1 and x>=0 and x<=119 and y>=0 and y<=159:
+						if (start[0] == x and start[1] == y) or (goal[0] == x and goal[1] == y):
+							continue
+						else:
+							self.data[x, y] = '2'
 
-    def plotWest(self, row, col):
-        curr = []
-        curr.append([row, col])
-        #First 20 extend perpendicular to border
-        for _ in range(20):
-            col+=1
-            if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
-                return None
-            else:
-                curr.append([row,col])
-        #Next 20 60% chance to go straight, 20% chance to diverge until over 100 or wall
-        while len(curr) < 100:
-            r2 = randint(0,7)
-            for _ in range(20):
-                #Goes Straight
-                if 0<=r2<=5:
-                    col+=1
-                    if(not(self.in_bounds([row,col]))):
-                        return curr
-                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
-                        return None
-                    else:
-                        curr.append([row,col])
-                #Goes left
-                elif r2 == 6:
-                    row-=1
-                    if(not(self.in_bounds([row,col]))):
-                        return curr
-                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
-                        return None
-                    else:
-                        curr.append([row,col])
-                #Goes right
-                elif r2 == 7:
-                    row+=1
-                    if(not(self.in_bounds([row,col]))):
-                        return curr
-                    if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
-                        return None
-                    else:
-                        curr.append([row,col])
+	def createHighways(self):
+		global highwaylist
+		highwaylist = [[], [], [], []]
+		for number in range(4):
+			s = randomHighwayStart()
+			row = s[0]
+			col = s[1]
+			#North
+			if s[2] == 0:
+				highwaylist[number] = self.plotNorth(row, col)
+				pass
+			#South
+			elif s[2] == 1:
+				highwaylist[number] = self.plotSouth(row, col)
+				pass
 
-        return curr
+			#East
+			elif s[2] == 2:
+				highwaylist[number] = self.plotEast(row, col)
+				pass
+
+			#West
+			elif s[2] == 3:
+				highwaylist[number] = self.plotWest(row, col)
+				pass
+			if highwaylist[number] == None or len(highwaylist[number]) < 100:
+				number-=1
+			else:
+				for pair in highwaylist[number]:
+					if self.data[pair[0], pair[1]].decode() == '1':
+						self.data[pair[0], pair[1]] = 'a'
+					elif self.data[pair[0], pair[1]].decode() == '2':
+						self.data[pair[0], pair[1]] = 'b'
+
+	def plotNorth(self, row, col):
+		curr = []
+		curr.append([row, col])
+		#First 20 extend perpendicular to border
+		for _ in range(20):
+			row+=1
+			if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
+				return None
+			else:
+				curr.append([row,col])
+		#Next 20 60% chance to go straight, 20% chance to diverge until over 100 or wall
+		while len(curr) < 100:
+			r2 = randint(0,7)
+			for _ in range(20):
+				#Goes Straight
+				if 0<=r2<=5:
+					row+=1
+					if(not(self.in_bounds([row,col]))):
+						return curr
+					if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
+						return None
+					else:
+						curr.append([row,col])
+				#Goes left
+				elif r2 == 6:
+					col+=1
+					if(not(self.in_bounds([row,col]))):
+						return curr
+					if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
+						return None
+					else:
+						curr.append([row,col])
+				#Goes right
+				elif r2 == 7:
+					col-=1
+					if(not(self.in_bounds([row,col]))):
+						return curr
+					if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
+						return None
+					else:
+						curr.append([row,col])
+
+
+
+		return curr
+
+	def plotSouth(self, row, col):
+		curr = []
+		curr.append([row, col])
+		#First 20 extend perpendicular to border
+		for _ in range(20):
+			row-=1
+			if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
+				return None
+			else:
+				curr.append([row,col])
+		#Next 20 60% chance to go straight, 20% chance to diverge until over 100 or wall
+		while len(curr) < 100:
+			r2 = randint(0,7)
+			for _ in range(20):
+				#Goes Straight
+				if 0<=r2<=5:
+					row-=1
+					if(not(self.in_bounds([row,col]))):
+						return curr
+					if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
+						return None
+					else:
+						curr.append([row,col])
+				#Goes left
+				elif r2 == 6:
+					col-=1
+					if(not(self.in_bounds([row,col]))):
+						return curr
+					if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
+						return None
+					else:
+						curr.append([row,col])
+				#Goes right
+				elif r2 == 7:
+					col+=1
+					if(not(self.in_bounds([row,col]))):
+						return curr
+					if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
+						return None
+					else:
+						curr.append([row,col])
+
+		return curr
+		
+	def plotEast(self, row, col):
+		curr = []
+		curr.append([row, col])
+		#First 20 extend perpendicular to border
+		for _ in range(20):
+			col-=1
+			if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
+				return None
+			else:
+				curr.append([row,col])
+		#Next 20 60% chance to go straight, 20% chance to diverge until over 100 or wall
+		while len(curr) < 100:
+			r2 = randint(0,7)
+			for _ in range(20):
+				#Goes Straight
+				if 0<=r2<=5:
+					col-=1
+					if(not(self.in_bounds([row,col]))):
+						return curr
+					if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
+						return None
+					else:
+						curr.append([row,col])
+				#Goes left
+				elif r2 == 6:
+					row+=1
+					if(not(self.in_bounds([row,col]))):
+						return curr
+					if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
+						return None
+					else:
+						curr.append([row,col])
+				#Goes right
+				elif r2 == 7:
+					row-=1
+					if(not(self.in_bounds([row,col]))):
+						return curr
+					if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
+						return None
+					else:
+						curr.append([row,col])
+		return curr
+
+	def plotWest(self, row, col):
+		curr = []
+		curr.append([row, col])
+		#First 20 extend perpendicular to border
+		for _ in range(20):
+			col+=1
+			if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
+				return None
+			else:
+				curr.append([row,col])
+		#Next 20 60% chance to go straight, 20% chance to diverge until over 100 or wall
+		while len(curr) < 100:
+			r2 = randint(0,7)
+			for _ in range(20):
+				#Goes Straight
+				if 0<=r2<=5:
+					col+=1
+					if(not(self.in_bounds([row,col]))):
+						return curr
+					if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
+						return None
+					else:
+						curr.append([row,col])
+				#Goes left
+				elif r2 == 6:
+					row-=1
+					if(not(self.in_bounds([row,col]))):
+						return curr
+					if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
+						return None
+					else:
+						curr.append([row,col])
+				#Goes right
+				elif r2 == 7:
+					row+=1
+					if(not(self.in_bounds([row,col]))):
+						return curr
+					if self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' :
+						return None
+					else:
+						curr.append([row,col])
+
+		return curr
 
 def randomHighwayStart():
-    r1 = randint(0, 3)
-    #North
-    if r1 == 0:
-        cols = randint(0,159)
-        s = [0, cols, r1]
-    #South
-    elif r1 == 1:
-        cols = randint(0,159)
-        s = [119, cols, r1]
-    #East
-    elif r1 == 2:
-        rows = randint(0,119)
-        s = [rows, 159, r1]
-    #West
-    elif r1 == 3:
-        rows = randint(0,119)
-        s = [rows, 0, r1] 
-    else:
-        exit('ERROR: r1 is equal to ' + r1 + ' terminating from highway creator')
-    return s
+	r1 = randint(0, 3)
+	#North
+	if r1 == 0:
+		cols = randint(0,159)
+		s = [0, cols, r1]
+	#South
+	elif r1 == 1:
+		cols = randint(0,159)
+		s = [119, cols, r1]
+	#East
+	elif r1 == 2:
+		rows = randint(0,119)
+		s = [rows, 159, r1]
+	#West
+	elif r1 == 3:
+		rows = randint(0,119)
+		s = [rows, 0, r1] 
+	else:
+		exit('ERROR: r1 is equal to ' + r1 + ' terminating from highway creator')
+	return s
 def randomize(w):
-    #Defines start and Goal
-    global start
-    start = [None, None]
-    global goal
-    goal = [None, None]
+	#Defines start and Goal
+	global start
+	start = [None, None]
+	global goal
+	goal = [None, None]
 
-    r1 = randint(0,3)
-    #North
-    if r1 == 0:
-        rows = randint(0,19)
-        cols = randint(0,159)
-        rowg = randint(99,119)
-        colg = randint(0,159)
-        start = [rows, cols]
-        goal = [rowg, colg]
-    #South
-    elif r1 == 1:
-        rows = randint(99,119)
-        cols = randint(0,159)
-        rowg = randint(0,19)
-        colg = randint(0,159)
-        start = [rows, cols]
-        goal = [rowg, colg]
-    #East
-    elif r1 == 2:
-        rows = randint(0,119)
-        cols = randint(139,159)
-        rowg = randint(0,119)
-        colg = randint(0,19)
-        start = [rows, cols]
-        goal = [rowg, colg]
-    #West
-    elif r1 == 3:
-        rows = randint(0,119)
-        cols = randint(0,19)
-        rowg = randint(0,119)
-        colg = randint(139,159)
-        start = [rows, cols]
-        goal = [rowg, colg]
-    
-    if w.data[start[0], start[1]] == '0' or w.data[goal[0], goal[1]] == '0' or w.data[start[0], start[1]] == 'a' or w.data[goal[0], goal[1]] == 'a' or w.data[start[0], start[1]] == 'b' or w.data[goal[0], goal[1]] == 'b':
-        randomize(w)
+	r1 = randint(0,3)
+	#North
+	if r1 == 0:
+		rows = randint(0,19)
+		cols = randint(0,159)
+		rowg = randint(99,119)
+		colg = randint(0,159)
+		start = [rows, cols]
+		goal = [rowg, colg]
+	#South
+	elif r1 == 1:
+		rows = randint(99,119)
+		cols = randint(0,159)
+		rowg = randint(0,19)
+		colg = randint(0,159)
+		start = [rows, cols]
+		goal = [rowg, colg]
+	#East
+	elif r1 == 2:
+		rows = randint(0,119)
+		cols = randint(139,159)
+		rowg = randint(0,119)
+		colg = randint(0,19)
+		start = [rows, cols]
+		goal = [rowg, colg]
+	#West
+	elif r1 == 3:
+		rows = randint(0,119)
+		cols = randint(0,19)
+		rowg = randint(0,119)
+		colg = randint(139,159)
+		start = [rows, cols]
+		goal = [rowg, colg]
+	
+	if w.data[start[0], start[1]] == '0' or w.data[goal[0], goal[1]] == '0' or w.data[start[0], start[1]] == 'a' or w.data[goal[0], goal[1]] == 'a' or w.data[start[0], start[1]] == 'b' or w.data[goal[0], goal[1]] == 'b':
+		randomize(w)
 
 
-    global hard_travers
-    hard_travers = []
-    for _ in range(8):
-        hard_travers.append([randint(0,119), randint(0,159)])
+	global hard_travers
+	hard_travers = []
+	for _ in range(8):
+		hard_travers.append([randint(0,119), randint(0,159)])
 
 def load(w):
-    if(input("Would you like to load a file? (y/n): ") != "y"):
-        randomize(w)
-        return
-    with open(input("Please enter the path to input file: "), 'r') as f:
-        input_list = f.read().strip().split("\n")
-        #First line will provide the coordinates of start
-        global start
-        start = [None, None]
-        token = input_list[0].split(",")
-        start[0] = int(token[0])
-        start[1] = int(token[1])
-        #Second line will provide the coordinates of goal
-        global goal
-        goal = [None, None]
-        token = input_list[1].split(",")
-        goal[0] = int(token[0])
-        goal[1] = int(token[1])
-        #Next EIGHT lines will provide the coordinates of the centers of the hard to traverse regions
-        global hard_travers
-        hard_travers = [input_list[2].split(","), input_list[3].split(","), input_list[4].split(","), input_list[5].split(","), input_list[6].split(","), input_list[7].split(","), input_list[8].split(","), input_list[9].split(",")]
-        for pair in hard_travers:
-            pair[0] = int(pair[0])
-            pair[1] = int(pair[1])
+	if(input("Would you like to load a file? (y/n): ") != "y"):
+		randomize(w)
+		return
+	with open(input("Please enter the path to input file: "), 'r') as f:
+		input_list = f.read().strip().split("\n")
+		#First line will provide the coordinates of start
+		global start
+		start = [None, None]
+		token = input_list[0].split(",")
+		start[0] = int(token[0])
+		start[1] = int(token[1])
+		#Second line will provide the coordinates of goal
+		global goal
+		goal = [None, None]
+		token = input_list[1].split(",")
+		goal[0] = int(token[0])
+		goal[1] = int(token[1])
+		#Next EIGHT lines will provide the coordinates of the centers of the hard to traverse regions
+		global hard_travers
+		hard_travers = [input_list[2].split(","), input_list[3].split(","), input_list[4].split(","), input_list[5].split(","), input_list[6].split(","), input_list[7].split(","), input_list[8].split(","), input_list[9].split(",")]
+		for pair in hard_travers:
+			pair[0] = int(pair[0])
+			pair[1] = int(pair[1])
 
 def unload():
 	with open(input("Please enter the path to output file: "), 'w') as f:
@@ -453,64 +453,67 @@ def unload():
 # search
 w = world()
 
-def aStarSearch(world, heurisitic, weight):
+def aStarSearch(world, heuristic, weight):
 	# when weight == 1: normal A*
 	# when weight > 1: weighted A*
 	closedList = set() # collection of expanded nodes
 	openList = queue.PriorityQueue() # collection of all generated nodes
-	costPerCell = {w.data[w.start[0], w.start[1]]: 0} # collection of cost from start to specific node
+	costPerCell = {} # collection of cost from start to specific node
+	costPerCell[tuple(world.start)] = 0
 	parent = {}
 
-	closedList.add(tuple(start))
-	openList.put((0, tuple(start)))
+	closedList.add(tuple(world.start))
+	openList.put((0, tuple(world.start)))
 
 	while not openList.empty():
 		# get next in open list and set as current node
 		cur = openList.get()
+		cur = cur[1]
 
 		if cur == goal:
 			p = createPath(parent)
 			# return visited nodes and path
-			return (closedList, p)
-		
-		for node in world.connected_cells(None, cur):
-			cost = costPerCell[cur] + getCost(world, parent, node)
+			return closedList, p
+
+		for node in world.connected_cells(cur):
+			cost = costPerCell[cur] + getCost(world, '1', node)
 			if node not in closedList:
 				costPerCell[node] = cost
 				parent[node] = cur
 				closedList.add(node)
-				openList.put((cost + (weight * getHeurisitic(node, heurisitic)), node))
-	return (closedList, None) # path not found
+				openList.put((cost + (weight * getHeuristic(node, heuristic)), node))
+	return closedList, None # path not found
 
 def createPath(parent):
 	path = []
-	cur = parent[goal]
+	cur = parent[tuple(currentWorld.goal)]
 	while cur != (0, 0):
 		path = path + tuple(cur)
 		cur = parent[cur]
 	return path[::-1]
 
-def getHeurisitic(node, heurisitic):
-	x1, y1 = node.x, node.y
+def getHeuristic(node, heuristic):
+	x1, y1 = node[0], node[1]
 	x2, y2 = w.goal[0], w.goal[1]
-	if heurisitic == "manhattan":
+	if heuristic.lower() == "manhattan":
 		return abs(x1-x2) + abs(y1-y2)
-	elif heurisitic == "euclidean":
+	elif heuristic.lower() == "euclidean":
 		return math.sqrt((x1-x2)**2 + (y1-y2)**2)
-	elif heurisitic == "euclidean_squared":
-        	return (x1-x2)**2 + (y1-y2)**2
-	elif heurisitic == "chebyshev":
+	elif heuristic.lower() == "euclidean_squared":
+			return (x1-x2)**2 + (y1-y2)**2
+	elif heuristic.lower() == "chebyshev":
 		return abs(x1-x2) + abs(y1-y2) - min(abs(x1-x2),abs(y1-y2))
-	elif heurisitic == "octile":
+	elif heuristic.lower() == "octile":
 		return abs(x1-x2) + abs(y1-y2) - (math.sqrt(2)-2) * min(abs(x1-x2),abs(y1-y2))
-	elif heurisitic == "mini_manhattan":
+	elif heuristic.lower() == "mini_manhattan":
 		return (abs(x1-x2) + abs(y1-y2))/4
-	elif heurisitic == "mini_euclidean":
+	elif heuristic.lower() == "mini_euclidean":
 		return math.sqrt((x1-x2)**2 + (y1-y2)**2)/4
 
 def getCost(world, parent, node):
 	cellType = world.data[node[0], node[1]]
-	parentType = world.data[parent[0], parent[1]]
+	# parentType = world.data[parent[0], parent[1]]
+	return 1
 	if cellType == '1':
 		if parentType == '1':
 			if node.direction == "horiz" or node.direction == "vert":
@@ -560,6 +563,7 @@ def input_handler():
 
 def drawMap(canvas):
 	w = FRAME_SIZE / 120
+	global solution, path
 	for r in range(120):
 		for c in range(160):
 			pts = [(r * w, c * w), ((r + 1) * w, c * w),
@@ -569,10 +573,12 @@ def drawMap(canvas):
 				canvas.draw_polygon(pts, 1, "Black", "#66ff00")
 			elif [r, c] == currentWorld.goal:
 				canvas.draw_polygon(pts, 1, "Black", "#ff0000")
+			elif (r, c) in path:
+				canvas.draw_polygon(pts, 1, "Black", "Purple")
 			elif currentWorld.data[r, c].decode() == 'a':
-			    canvas.draw_polygon(pts, 1, "Black", "#add8e6")
+				canvas.draw_polygon(pts, 1, "Black", "#add8e6")
 			elif currentWorld.data[r, c].decode() == 'b':
-			    canvas.draw_polygon(pts, 1, "Black", "Blue")
+				canvas.draw_polygon(pts, 1, "Black", "Blue")
 			elif currentWorld.data[r, c].decode() == '0':
 				canvas.draw_polygon(pts, 1, "Black", "#292929")
 			elif currentWorld.data[r, c].decode() == '1':
@@ -597,18 +603,24 @@ def paramCheck():
 		heur.set_text("Current Heuristic: Euclidean")
 
 def aStarSolve():
+	global solution, path
 	if inputWeight.get_text() != "1":
 		inputWeight.set_text("1")
 	paramCheck()
 	algo.set_text("Current Algorithm: A*")
+	print(heur.get_text()[19:])
 	if heur.get_text()[19:] == "Euclidean":
-		pass
+		solution, path = aStarSearch(currentWorld, "euclidean", 1)
+		print(path)
 	elif heur.get_text()[19:] == "Manhattan":
-		pass
+		solution, path = aStarSearch(currentWorld, "manhattan", 1)
 	elif heur.get_text()[19:] == "Sequential":
-		pass
+		solution, path = aStarSearch(currentWorld, "sequential", 1)
 	else:
-		pass
+		solution, path = aStarSearch(currentWorld, "euclidean", 1)
+	if not path:
+		status.set_text("Current Status: No Path")
+
 
 def weightedAStarSolve():
 	algo.set_text("Current Algorithm: Weighted A*")
@@ -635,11 +647,11 @@ def sequentialAStarSolve():
 		pass
 
 #couldn't figure out how to pass param to button_handler
-def setHeurisiticE():
+def setheuristicE():
 	heur.set_text("Curent Heuristic: Euclidean")
-def setHeurisiticM():
+def setheuristicM():
 	heur.set_text("Current Heuristic: Manhattan")
-def setHeurisiticS():
+def setheuristicS():
 	heur.set_text("Current Heuristic: Sequential")
 
 
@@ -651,6 +663,9 @@ def main():
 	currentWorld.createBlocked()
 	currentWorld.printworld()
 	currentWorld.rotateSnG()
+	global solution, path
+	solution = []
+	path = []
 	frame = simplegui.create_frame("Heuristic Search", FRAME_SIZE, FRAME_SIZE)
 	frame.add_button("Generate Map", generateMap, 100)
 	frame.add_button("Update Start/Goal", currentWorld.setSnG,100)
@@ -661,9 +676,9 @@ def main():
 
 	frame.add_label("")
 	frame.add_label("Heuristic:")
-	frame.add_button("Euclidean", setHeurisiticE, 100)
-	frame.add_button("Manhattan", setHeurisiticM, 100)
-	frame.add_button("Sequential", setHeurisiticS, 100)
+	frame.add_button("Euclidean", setheuristicE, 100)
+	frame.add_button("Manhattan", setheuristicM, 100)
+	frame.add_button("Sequential", setheuristicS, 100)
 
 	frame.add_label("")
 	frame.add_label("Search Algorithm:")
