@@ -11,7 +11,7 @@ class world:
     def __init__(self):
         self.data = np.chararray(shape=(120, 160))
         self.data[:] = '1'
-        load()
+        load(self)
         self.start = start
         self.goal = goal
         self.hard_travers = hard_travers
@@ -20,6 +20,57 @@ class world:
         self.highwaylist = highwaylist
         self.createBlocked()
         self.setSnG()
+
+    def rotateSnG(self):
+        self.data[self.start[0], self.start[1]] = '1'
+        self.data[self.goal[0], self.goal[1]] = '1'
+
+        #Defines start and Goal
+        global start
+        start = [None, None]
+        global goal
+        goal = [None, None]
+
+        r1 = randint(0,3)
+        #North
+        if r1 == 0:
+            rows = randint(0,19)
+            cols = randint(0,159)
+            rowg = randint(99,119)
+            colg = randint(0,159)
+            start = [rows, cols]
+            goal = [rowg, colg]
+        #South
+        elif r1 == 1:
+            rows = randint(99,119)
+            cols = randint(0,159)
+            rowg = randint(0,19)
+            colg = randint(0,159)
+            start = [rows, cols]
+            goal = [rowg, colg]
+        #East
+        elif r1 == 2:
+            rows = randint(0,119)
+            cols = randint(139,159)
+            rowg = randint(0,119)
+            colg = randint(0,19)
+            start = [rows, cols]
+            goal = [rowg, colg]
+        #West
+        elif r1 == 3:
+            rows = randint(0,119)
+            cols = randint(0,19)
+            rowg = randint(0,119)
+            colg = randint(139,159)
+            start = [rows, cols]
+            goal = [rowg, colg]
+        
+        if self.data[start[0], start[1]] == '0' or self.data[goal[0], goal[1]] == '0' or self.data[start[0], start[1]] == 'a' or self.data[goal[0], goal[1]] == 'a' or self.data[start[0], start[1]] == 'b' or self.data[goal[0], goal[1]] == 'b':
+            randomize(self)
+        self.setSnG()
+
+
+
 
     def setSnG(self):
         #assigns the start index
@@ -54,7 +105,12 @@ class world:
         x = cell[0]
         y = cell[1]
         connected_cells = set()
-        all_possible = [(x, y+1), (x, y-1), (x+1, y+1), (x+1, y), (x+1, y-1), (x-1, y), (x-1, y+1), (x-1, y-1)]
+        #Highway
+        if self.data[x, y] == 'a' or self.data[x, y] == 'b':
+            all_possible = [(x, y+1), (x, y-1), (x+1, y), (x-1, y)]
+        #NotHighway
+        else:
+            all_possible = [(x, y+1), (x, y-1), (x+1, y+1), (x+1, y), (x+1, y-1), (x-1, y), (x-1, y+1), (x-1, y-1)]
         for (row, col) in all_possible:
             if self.in_bounds((row,col)):
                 if self.data[row,col] != '0':
@@ -304,7 +360,7 @@ def randomHighwayStart():
     else:
         exit('ERROR: r1 is equal to ' + r1 + ' terminating from highway creator')
     return s
-def randomize():
+def randomize(w):
     #Defines start and Goal
     global start
     start = [None, None]
@@ -344,7 +400,9 @@ def randomize():
         colg = randint(139,159)
         start = [rows, cols]
         goal = [rowg, colg]
-
+    
+    if w.data[start[0], start[1]] == '0' or w.data[goal[0], goal[1]] == '0' or w.data[start[0], start[1]] == 'a' or w.data[goal[0], goal[1]] == 'a' or w.data[start[0], start[1]] == 'b' or w.data[goal[0], goal[1]] == 'b':
+        randomize(w)
 
 
     global hard_travers
@@ -352,9 +410,9 @@ def randomize():
     for _ in range(8):
         hard_travers.append([randint(0,119), randint(0,159)])
 
-def load():
+def load(w):
     if(input("Would you like to load a file? (y/n): ") != "y"):
-        randomize()
+        randomize(w)
         return
     with open(input("Please enter the path to input file: "), 'r') as f:
         input_list = f.read().strip().split("\n")
@@ -549,7 +607,7 @@ def main():
     w.createHighways()
     w.createBlocked()
     w.printworld()
-    print(aStarSearch(world, "manhattan", 1))
-
+    w.rotateSnG()
+    w.printworld()
 if __name__ == "__main__":
 	main()
