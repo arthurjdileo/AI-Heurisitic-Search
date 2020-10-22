@@ -516,38 +516,37 @@ def getHeuristic(w, node, heuristic):
 def getCost(world, parent, node):
 	cellType = world.data[node[0], node[1]]
 	# parentType = world.data[parent[0], parent[1]]
-	return 1
 	if cellType == '1':
-		if parentType == '1':
+		if world.data[int(parent[0].decode()), int(parent[1].decode())] == '1':
 			if node.direction == "horiz" or node.direction == "vert":
 				return 1
 			else:
 				return math.sqrt(2)
-		elif parentType == '2':
+		elif world.data[int(parent[0].decode()), int(parent[1].decode())] == '2':
 			if node.direction == "horiz" or node.direction == "vert":
 				return 1.5
 			else:
 				return ((math.sqrt(2)+math.sqrt(8))/2)
 	elif cellType == 2:
-		if parentType == 2:
+		if world.data[int(parent[0].decode()), int(parent[1].decode())] == 2:
 			if node.direction == "horiz" or node.direction == "vert":
 				return 2
 			else:
 				return math.sqrt(8)
-		elif parentType == 1:
+		elif world.data[int(parent[0].decode()), int(parent[1].decode())] == 1:
 			if node.direction == "horiz" or node.direction == "vert":
 				return 1.5
 			else:
 				return ((math.sqrt(2)+math.sqrt(8))/2)
 	elif cellType == 'a': 
-		if parentType == 'a':
+		if world.data[int(parent[0].decode()), int(parent[1].decode())] == 'a':
 			return 0.25
-		elif parentType == 'b':
+		elif world.data[int(parent[0].decode()), int(parent[1].decode())] == 'b':
 				return 0.375
 	elif cellType == 'b':
-		if parentType == 'b':
+		if world.data[int(parent[0].decode()), int(parent[1].decode())] == 'b':
 				return 0.5
-		elif parentType == 'a':
+		elif world.data[int(parent[0].decode()), int(parent[1].decode())] == 'a':
 				return 0.375
 
 
