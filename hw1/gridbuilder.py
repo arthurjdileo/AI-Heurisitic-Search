@@ -112,7 +112,7 @@ class world:
 		else:
 			all_possible = [(x, y+1), (x, y-1), (x+1, y+1), (x+1, y), (x+1, y-1), (x-1, y), (x-1, y+1), (x-1, y-1)]
 		for (row, col) in all_possible:
-			if self.in_bounds((row,col)) and self.data[row,col].decode() != '0':
+			if self.in_bounds((row,col)) and self.data[row,col].decode() != '0' and self.data[row,col].decode() != 'S':
 				connected_cells.append((row,col))
 		return connected_cells
 	def generateTexture(self):
@@ -473,20 +473,20 @@ def aStarSearch(world, heuristic, weight):
 			# return visited nodes and path
 			return closedList, p
 
-		for node in world.connected_cells(cur):
-			cost = costPerCell[cur] + getCost(world, cur, node)
-			if node not in closedList:
-				costPerCell[node] = cost
-				parent[node] = cur
-				closedList.add(node)
-				openList.put((cost + (weight * getHeuristic(world, node, heuristic)), node))
+		for nextCell in world.connected_cells(cur):
+			cost = costPerCell[cur] + getCost(world, cur, nextCell)
+			if nextCell not in closedList:
+				costPerCell[nextCell] = cost
+				parent[nextCell] = cur
+				closedList.add(nextCell)
+				openList.put((cost + (weight * getHeuristic(world, nextCell, heuristic)), nextCell))
 	return closedList, None # path not found
 
 def createPath(parent):
 	path = []
-	cur = parent[tuple(currentWorld.goal)]
+	cur = parent[currentworld.]
 	while cur != (0, 0):
-		path = path + tuple(cur)
+		path.append(tuple(cur))
 		cur = parent[cur]
 	return path[::-1]
 
@@ -525,6 +525,8 @@ def getCost(world, current, nextCell):
 	#Sets boolean value for diagonal and horizontalOrVertical (horv)
 	diagonal = changeR and changeC
 	if(nextType == '0'):
+		return 100000
+	if(nextType == 'S'):
 		return 100000
 	print("Curr: " +currType)
 	print("Next: " +nextType)
