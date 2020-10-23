@@ -112,9 +112,8 @@ class world:
 		else:
 			all_possible = [(x, y+1), (x, y-1), (x+1, y+1), (x+1, y), (x+1, y-1), (x-1, y), (x-1, y+1), (x-1, y-1)]
 		for (row, col) in all_possible:
-			if self.in_bounds((row,col)):
-				if self.data[row,col] != '0':
-					connected_cells.append((row,col))
+			if self.in_bounds((row,col)) and self.data[row,col].decode() != '0':
+				connected_cells.append((row,col))
 		return connected_cells
 	def generateTexture(self):
 		#Start, Goal, and hard_travers can all be found in load as global variables
@@ -469,13 +468,13 @@ def aStarSearch(world, heuristic, weight):
 		cur = openList.get()
 		cur = cur[1]
 
-		if cur == goal:
+		if world.data[cur[0], cur[1]].decode() == 'G':
 			p = createPath(parent)
 			# return visited nodes and path
 			return closedList, p
 
 		for node in world.connected_cells(cur):
-			cost = costPerCell[cur] + getCost(world, '1', node)
+			cost = costPerCell[cur] + getCost(world, cur, node)
 			if node not in closedList:
 				costPerCell[node] = cost
 				parent[node] = cur
@@ -513,41 +512,126 @@ def getHeuristic(w, node, heuristic):
 	elif heuristic.lower() == "mini_euclidean":
 		return math.sqrt((x1-x2)**2 + (y1-y2)**2)/4
 
-def getCost(world, parent, node):
-	cellType = world.data[node[0], node[1]]
-	# parentType = world.data[parent[0], parent[1]]
-	if cellType == '1':
-		if world.data[int(parent[0].decode()), int(parent[1].decode())] == '1':
-			if node.direction == "horiz" or node.direction == "vert":
+def getCost(world, current, nextCell):
+	currType = world.data[current[0], current[1]].decode()
+	nextType = world.data[nextCell[0], nextCell[0]].decode()
+	currR = current[0]
+	currC = current[1]
+	nextR = nextCell[0]
+	nextC = nextCell[1]
+	#Boolean value to see if row and col changed
+	changeR = bool((abs(nextR-currR)) > 0)
+	changeC = bool((abs(nextC-currC)) > 0)
+	#Sets boolean value for diagonal and horizontalOrVertical (horv)
+	diagonal = changeR and changeC
+	if(nextType == '0'):
+		return 100000
+	print("Curr: " +currType)
+	print("Next: " +nextType)
+	#Current cell is an unblocked
+	if currType == '1':
+		#Next is unblocked
+		if nextType == '1':
+			if not diagonal:
 				return 1
 			else:
 				return math.sqrt(2)
-		elif world.data[int(parent[0].decode()), int(parent[1].decode())] == '2':
-			if node.direction == "horiz" or node.direction == "vert":
+		#Next is hard to traverse
+		elif nextType == '2':
+			if not diagonal:
 				return 1.5
 			else:
-				return ((math.sqrt(2)+math.sqrt(8))/2)
-	elif cellType == 2:
-		if world.data[int(parent[0].decode()), int(parent[1].decode())] == 2:
-			if node.direction == "horiz" or node.direction == "vert":
+				return (math.sqrt(2) + math.sqrt(8))/2
+		#Next is unblocked highway
+		elif nextType == 'a':
+			if not diagonal:
+				return 0.25
+			else:
+				return (math.sqrt(2))/4
+		#Next is hard to traverse highway
+		elif nextType == 'b':
+			if not diagonal:
+				return float(3/8)
+			else:
+				return float((math.sqrt(2) + math.sqrt(8))/8)
+	#Current cell is hard to traverse
+	if currType == '2':
+		#Next is unblocked
+		if nextType == '1':
+			if not diagonal:
+				return 1.5
+			else:
+				return (math.sqrt(2) + math.sqrt(8))/2
+		#Next is hard to traverse
+		elif nextType == '2':
+			if not diagonal:
 				return 2
 			else:
 				return math.sqrt(8)
-		elif world.data[int(parent[0].decode()), int(parent[1].decode())] == 1:
-			if node.direction == "horiz" or node.direction == "vert":
+		#Next is unblocked highway
+		elif nextType == 'a':
+			if not diagonal:
+				return float(3/8)
+			else:
+				return float((math.sqrt(2) + math.sqrt(8))/8)
+		#Next is hard to traverse highway
+		elif nextType == 'b':
+			if not diagonal:
+				return float(1/2)
+			else:
+				return float(math.sqrt(8)/4)
+	#Current cell is an unblocked highway
+	if currType == 'a':
+		#Next is unblocked
+		if nextType == '1':
+			if not diagonal:
+				return 1
+			else:
+				return math.sqrt(2)
+		#Next is hard to traverse
+		elif nextType == '2':
+			if not diagonal:
 				return 1.5
 			else:
-				return ((math.sqrt(2)+math.sqrt(8))/2)
-	elif cellType == 'a': 
-		if world.data[int(parent[0].decode()), int(parent[1].decode())] == 'a':
-			return 0.25
-		elif world.data[int(parent[0].decode()), int(parent[1].decode())] == 'b':
-				return 0.375
-	elif cellType == 'b':
-		if world.data[int(parent[0].decode()), int(parent[1].decode())] == 'b':
-				return 0.5
-		elif world.data[int(parent[0].decode()), int(parent[1].decode())] == 'a':
-				return 0.375
+				return float((math.sqrt(2) + math.sqrt(8))/2)
+		#Next is unblocked highway
+		elif nextType == 'a':
+			if not diagonal:
+				return 0.25
+			else:
+				return (math.sqrt(2))/4
+		#Next is hard to traverse highway
+		elif nextType == 'b':
+			if not diagonal:
+				return float(3/8)
+			else:
+				return float((math.sqrt(2) + math.sqrt(8))/8)
+	#Current cell is a hard to traverse highway
+	if currType == 'b':
+		#Next is unblocked
+		if nextType == '1':
+			if not diagonal:
+				return 1.5
+			else:
+				return (math.sqrt(2) + math.sqrt(8))/2
+		#Next is hard to traverse
+		elif nextType == '2':
+			if not diagonal:
+				return 2
+			else:
+				return math.sqrt(8)
+		#Next is unblocked highway
+		elif nextType == 'a':
+			if not diagonal:
+				return float(3/8)
+			else:
+				return (math.sqrt(2))/4
+		#Next is hard to traverse highway
+		elif nextType == 'b':
+			if not diagonal:
+				return float(1/2)
+			else:
+				return float(math.sqrt(8)/4)
 
 
 # gui
