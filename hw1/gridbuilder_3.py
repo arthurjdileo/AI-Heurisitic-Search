@@ -8,9 +8,9 @@ Created on Tue Oct 27 14:46:05 2020
 
 from random import randint
 import numpy as np
-import Queue as queue
+import queue
 import math
-import simplegui
+import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
 
 class Node:
 	def __init__(self, position, parent):
@@ -19,6 +19,8 @@ class Node:
 		self.g = 0 #Distance to start
 		self.h = 0 #Distance to goal
 		self.f = 0 #total cost
+	def __lt__(self, other):
+		return self.f < other.f
 
 class world:
 	def __init__(self):
@@ -126,7 +128,7 @@ class world:
 			all_possible = [(x, y+1), (x, y-1), (x+1, y+1), (x+1, y), (x+1, y-1), (x-1, y), (x-1, y+1), (x-1, y-1)]
 		for (row, col) in all_possible:
 			if self.in_bounds((row,col)) and self.data[row,col].decode() != '0' and self.data[row,col].decode() != 'S':
-				connected_cells.append(tuple(row,col))
+				connected_cells.append(tuple((row,col)))
 		return connected_cells
 	def generateTexture(self):
 		#Start, Goal, and hard_travers can all be found in load as global variables
@@ -474,19 +476,21 @@ def aStarSearch(world, heuristic, weight):
 	#costPerCell[tuple(world.start)] = 0
 
 	#closedList.add(tuple(world.start))
-	start_node = Node(tuple(world.start[0], world.start[1]), None)
+	start_node = Node(tuple((world.start[0], world.start[1])), None)
 	start_node.f = 0
-	openQueue.put(start_node.f, start_node)
-	openList.add(start_node.f, start_node)
+	openQueue.put((start_node.f, start_node))
+	openList.add(start_node)
 
 	while not openQueue.empty():
 		# get next in open list and set as current node
 		cur = openQueue.get()
+		print(cur)
 		#Node is the second item in the tuple
 		curr_node = cur[1]
+		print("\n"+ world.data[curr_node.position].decode())
 		closedList.add(curr_node)
         #Check if goal 
-		if world.data[curr_node.position[0], curr_node.position[1]] == 'G':
+		if world.data[curr_node.position[0], curr_node.position[1]].decode() == 'G':
 			p = createPath(curr_node.parent)
 			# return visited nodes and path
 			return p
@@ -500,11 +504,17 @@ def aStarSearch(world, heuristic, weight):
 			next_node.h = getHeuristic(world, next_node, heuristic)
 			next_node.f = next_node.g + next_node.h
 			#Check if new node is in the open list, and if it has a lower f
+			u = False
 			for node in openList:
-				#if not (in open list with a lower f value)
-				if not (next_node == node and next_node.f > node.f):
-					openList.add(next_node)
-					openQueue.put(next_node.f, next_node)
+				#if (in open list with a lower f value)
+				if (next_node == node and next_node.f > node.f):
+					u = True
+					break
+			if not u:
+				openList.add(next_node)
+				openQueue.put((int(next_node.f), next_node))
+			else:
+				closedList.add(next_node)
 	return closedList, None # path not found
 
 def createPath(parent):
@@ -518,7 +528,7 @@ def createPath(parent):
 def getHeuristic(w, node, heuristic):
 	if node == None:
 		print("THE NODE")
-	x1, y1 = node[0], node[1]
+	x1, y1 = node.position[0], node.position[1]
 	x2, y2 = w.goal[0], w.goal[1]
 	if x1 == None or y1 == None:
 		print("The coordinates!")
