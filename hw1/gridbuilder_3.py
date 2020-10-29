@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Oct 27 14:46:05 2020
-
-@author: myous8
-"""
 
 from random import randint
 import numpy as np
@@ -21,6 +16,16 @@ class Node:
 		self.f = 0 #total cost
 	def __lt__(self, other):
 		return self.f < other.f
+	def __eq__(self, other):
+		if not isinstance(other, Node):
+			return NotImplemented
+		return self.position == other.position
+	def __ne__(self, other):
+		return not self.__eq__(self, other)
+	def __hash__(self):
+		return hash(self.position)
+	def __repr__(self):
+		return "%d,%d" % (self.position[0], self.position[1])
 
 class world:
 	def __init__(self):
@@ -466,6 +471,14 @@ def unload():
 
 # search
 
+def createPath(parent):
+	path = []
+	cur = parent[currentWorld.data[r,c]]
+	while cur != (0, 0):
+		path.append(tuple(cur))
+		cur = parent[cur]
+	return path[::-1]
+
 def aStarSearch(world, heuristic, weight):
 	# when weight == 1: normal A*
 	# when weight > 1: weighted A*
@@ -480,14 +493,19 @@ def aStarSearch(world, heuristic, weight):
 	start_node.f = 0
 	openQueue.put((start_node.f, start_node))
 	openList.add(start_node)
+	print(start_node)
+	end_node = Node(tuple((world.goal[0], world.goal[1])), None)
+	print(end_node)
 
 	while not openQueue.empty():
+		print(closedList)
 		# get next in open list and set as current node
 		cur = openQueue.get()
-		print(cur)
+		# print(cur[1].position)
 		#Node is the second item in the tuple
 		curr_node = cur[1]
-		print("\n"+ world.data[curr_node.position].decode())
+		# print("\n"+ world.data[curr_node.position].decode())
+		# curr_node = 
 		closedList.add(curr_node)
         #Check if goal 
 		if world.data[curr_node.position[0], curr_node.position[1]].decode() == 'G':
@@ -516,14 +534,6 @@ def aStarSearch(world, heuristic, weight):
 			else:
 				closedList.add(next_node)
 	return closedList, None # path not found
-
-def createPath(parent):
-	path = []
-	cur = parent[currentWorld.data[r,c]]
-	while cur != (0, 0):
-		path.append(tuple(cur))
-		cur = parent[cur]
-	return path[::-1]
 
 def getHeuristic(w, node, heuristic):
 	if node == None:
