@@ -1,11 +1,31 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from random import randint
 import numpy as np
 import queue
 import math
-try:
-	import simplegui
-except ImportError:
-	import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
+import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
+
+class Node:
+	def __init__(self, position, parent):
+		self.position = position
+		self.parent = parent
+		self.g = 0 #Distance to start
+		self.h = 0 #Distance to goal
+		self.f = 0 #total cost
+	def __lt__(self, other):
+		return self.f < other.f
+	def __eq__(self, other):
+		if not isinstance(other, Node):
+			return NotImplemented
+		return self.position == other.position
+	def __ne__(self, other):
+		return not self.__eq__(other)
+	def __hash__(self):
+		return hash(self.position)
+	def __repr__(self):
+		return "%d,%d" % (self.position[0], self.position[1])
 
 class world:
 	def __init__(self):
@@ -113,7 +133,7 @@ class world:
 			all_possible = [(x, y+1), (x, y-1), (x+1, y+1), (x+1, y), (x+1, y-1), (x-1, y), (x-1, y+1), (x-1, y-1)]
 		for (row, col) in all_possible:
 			if self.in_bounds((row,col)) and self.data[row,col].decode() != '0' and self.data[row,col].decode() != 'S':
-				connected_cells.append((row,col))
+				connected_cells.append(tuple((row,col)))
 		return connected_cells
 	def generateTexture(self):
 		#Start, Goal, and hard_travers can all be found in load as global variables
@@ -451,49 +471,84 @@ def unload():
 
 # search
 
+def createPath(parent):
+	print("CREATE PATH")
+	path = set()
+	path.add(parent.position)
+	ptr = parent.parent
+	while(ptr is not None):
+		path.add(ptr.position)
+		ptr = ptr.parent
+	return path
+
 def aStarSearch(world, heuristic, weight):
 	# when weight == 1: normal A*
 	# when weight > 1: weighted A*
 	closedList = set() # collection of expanded nodes
-	openList = queue.PriorityQueue() # collection of all generated nodes
-	costPerCell = {} # collection of cost from start to specific node
-	costPerCell[tuple(world.start)] = 0
-	parent = {}
+	openQueue = queue.PriorityQueue() # collection of all generated nodes
+	openList = set()
+	#costPerCell = {} # collection of cost from start to specific node
+	#costPerCell[tuple(world.start)] = 0
 
-	closedList.add(tuple(world.start))
-	openList.put((0, tuple(world.start)))
+	#closedList.add(tuple(world.start))
+	start_node = Node(tuple((world.start[0], world.start[1])), None)
+	start_node.f = 0
+	openQueue.put((start_node.f, start_node))
+	openList.add(start_node)
+	print(start_node)
+	end_node = Node(tuple((world.goal[0], world.goal[1])), None)
+	print(end_node)
 
-	while not openList.empty():
+	while not openQueue.empty():
 		# get next in open list and set as current node
-		cur = openList.get()
-		cur = cur[1]
+		cur = openQueue.get()
+		try:
+			openList.remove(cur[1])
+		except KeyError:
+			print("yep")
+			#print(cur[1].position)
+		# print(cur[1].position)
+		#Node is the second item in the tuple
+		curr_node = cur[1]
+		# print("\n"+ world.data[curr_node.position].decode())
+		# curr_node = 
+        #Check if goal 
+		# if world.data[curr_node.position[0], curr_node.position[1]].decode() == 'G':
+		if curr_node.position == tuple(world.goal):
+		# if curr_node.position == world.goal:
+			print(curr_node.position)
+			print(tuple(world.goal))
+			print("\n")
+			return createPath(curr_node.parent), closedList
+		closedList.add(curr_node)
+		#Generates the current node's 8 (or 4 if highway) possible neighbors
+		for nextCell in world.connected_cells(curr_node.position):
+			next_node = Node(nextCell, curr_node)
+			#If node is in the closed list move on
+			if next_node in closedList:
+				continue
+			next_node.g = curr_node.g + math.sqrt(pow((next_node.position[0] - curr_node.position[0]), 2) + pow((next_node.position[0] - curr_node.position[0]), 2))
+			next_node.h = getHeuristic(world, next_node, heuristic)
+			next_node.f = next_node.g + next_node.h
+			#Check if new node is in the open list, and if it has a lower f
+			if next_node in openList:
+				for node in openList:
+					if(node.position == next_node.position) and (next_node.f < node.f):
+						node.g = next_node.g
+						node.h = next_node.h
+						node.f = next_node.f
+						node.parent = next_node.parent
+						node.position = next_node.position
+						break
+			else:
+				openList.add(next_node)
+				openQueue.put((int(next_node.f), next_node))
 
-		if world.data[cur[0], cur[1]].decode() == 'G':
-			p = createPath(parent)
-			# return visited nodes and path
-			return closedList, p
-
-		for nextCell in world.connected_cells(cur):
-			cost = costPerCell[cur] + getCost(world, cur, nextCell)
-			if nextCell not in closedList:
-				costPerCell[nextCell] = cost
-				parent[nextCell] = cur
-				closedList.add(nextCell)
-				openList.put((cost + (weight * getHeuristic(world, nextCell, heuristic)), nextCell))
-	return closedList, None # path not found
-
-def createPath(parent):
-	path = []
-	cur = parent[currentworld.]
-	while cur != (0, 0):
-		path.append(tuple(cur))
-		cur = parent[cur]
-	return path[::-1]
-
+	return None, closedList # path not found
 def getHeuristic(w, node, heuristic):
 	if node == None:
 		print("THE NODE")
-	x1, y1 = node[0], node[1]
+	x1, y1 = node.position[0], node.position[1]
 	x2, y2 = w.goal[0], w.goal[1]
 	if x1 == None or y1 == None:
 		print("The coordinates!")
@@ -502,7 +557,7 @@ def getHeuristic(w, node, heuristic):
 	elif heuristic.lower() == "euclidean":
 		return math.sqrt((x1-x2)**2 + (y1-y2)**2)
 	elif heuristic.lower() == "euclidean_squared":
-			return (x1-x2)**2 + (y1-y2)**2
+		return (x1-x2)**2 + (y1-y2)**2
 	elif heuristic.lower() == "chebyshev":
 		return abs(x1-x2) + abs(y1-y2) - min(abs(x1-x2),abs(y1-y2))
 	elif heuristic.lower() == "octile":
@@ -651,8 +706,7 @@ def input_handler():
 
 def drawMap(canvas):
 	w = FRAME_SIZE / 120
-	global solution, path
-	path = ()
+	global path, visited
 	for r in range(120):
 		for c in range(160):
 			pts = [(r * w, c * w), ((r + 1) * w, c * w),
@@ -664,6 +718,8 @@ def drawMap(canvas):
 				canvas.draw_polygon(pts, 1, "Black", "#ff0000")
 			elif (r, c) in path:
 				canvas.draw_polygon(pts, 1, "Black", "Purple")
+			elif (r, c) in visited:
+				canvas.draw_polygon(pts, 1, "Black", "Orange")
 			elif currentWorld.data[r, c].decode() == 'a':
 				canvas.draw_polygon(pts, 1, "Black", "#add8e6")
 			elif currentWorld.data[r, c].decode() == 'b':
@@ -675,9 +731,9 @@ def drawMap(canvas):
 			elif currentWorld.data[r, c].decode() == '2':
 				canvas.draw_polygon(pts, 1, "Black", "#9B9898")
 			
-			# # Draw path from start to finish
-			# elif (r, c) in self.solution["Path"]:
-			# 	canvas.draw_polygon(pts, 1, "Black", ["#F44336", "#FFCDD2"])
+			# Draw path from start to finish
+			elif (r, c) in path:
+				canvas.draw_polygon(pts, 1, "Black", ["#F44336", "#FFCDD2"])
 			# # Draw visited cells
 			# elif (r, c) in self.solution["Visited cells"] and (r, c) not in self.solution["Path"]:
 			# 	canvas.draw_polygon(pts, 1, "Black", ["#2196F3", "#BBDEFB"])
@@ -692,21 +748,21 @@ def paramCheck():
 		heur.set_text("Current Heuristic: Euclidean")
 
 def aStarSolve():
-	global solution, path
+	global path, visited
 	if inputWeight.get_text() != "1":
 		inputWeight.set_text("1")
 	paramCheck()
 	algo.set_text("Current Algorithm: A*")
 	print(heur.get_text()[19:])
 	if heur.get_text()[19:] == "Euclidean":
-		solution, path = aStarSearch(currentWorld, "euclidean", 1)
+		path, visited = aStarSearch(currentWorld, "euclidean", 1)
 		print(path)
 	elif heur.get_text()[19:] == "Manhattan":
-		solution, path = aStarSearch(currentWorld, "manhattan", 1)
+		path, visited = aStarSearch(currentWorld, "manhattan", 1)
 	elif heur.get_text()[19:] == "Sequential":
-		solution, path = aStarSearch(currentWorld, "sequential", 1)
+		path, visited = aStarSearch(currentWorld, "sequential", 1)
 	else:
-		solution, path = aStarSearch(currentWorld, "euclidean", 1)
+		path, visited = aStarSearch(currentWorld, "euclidean", 1)
 	if not path:
 		status.set_text("Current Status: No Path")
 
@@ -752,9 +808,9 @@ def main():
 	currentWorld.createBlocked()
 	currentWorld.printworld()
 	currentWorld.rotateSnG()
-	global solution, path
-	solution = []
+	global path, visited
 	path = []
+	visited = []
 	frame = simplegui.create_frame("Heuristic Search", FRAME_SIZE, FRAME_SIZE)
 	frame.add_button("Generate Map", generateMap, 100)
 	frame.add_button("Update Start/Goal", currentWorld.setSnG,100)
