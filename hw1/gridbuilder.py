@@ -41,7 +41,7 @@ class world:
 		self.createHighways()
 		self.highwaylist = highwaylist
 		self.createBlocked()
-		self.setSnG()
+		print(self.start, self.data[self.start[0], self.start[1]].decode(), self.goal, self.data[self.goal[0], self.goal[1]].decode())
 
 	def callLoad(self):
 			load(self)
@@ -120,7 +120,7 @@ class world:
 		for cell in range(3840):
 			row = randint(0,119)
 			col = randint(0,159)
-			if(self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b'):
+			if(self.data[row,col].decode() == 'a' or self.data[row,col].decode() == 'b' or self.data[row,col].decode() == 'S' or self.data[row,col].decode() == 'G'):
 				cell-=1
 				continue
 			else:
@@ -431,8 +431,6 @@ def randomize(w):
 		colg = randint(139,159)
 		start = [rows, cols]
 		goal = [rowg, colg]
-	print(w.data[start[0], start[1]].decode(), (start[0], start[1]))
-	print(w.data[goal[0], goal[1]].decode(), (goal[0], goal[1]))
 	if w.data[start[0], start[1]].decode() == '0' or w.data[goal[0], goal[1]].decode() == '0' or w.data[start[0], start[1]].decode() == 'a' or w.data[goal[0], goal[1]].decode() == 'a' or w.data[start[0], start[1]].decode() == 'b' or w.data[goal[0], goal[1]].decode() == 'b':
 		print("triggered")
 		w.rotateSnG()
@@ -701,12 +699,7 @@ def draw_handler(canvas):
 
 def generateMap():
 	global currentWorld
-	currentWorld.data = np.chararray(shape=(120, 160))
-	currentWorld.data[:] = '1'
-	currentWorld.generateTexture()
-	currentWorld.createHighways()
-	currentWorld.createBlocked()
-	currentWorld.rotateSnG()
+	currentWorld = world()
 
 def input_handler():
 	pass
@@ -739,6 +732,9 @@ def drawMap(canvas):
 				canvas.draw_polygon(pts, 1, "Black", "#9B9898")
 			else:
 				canvas.draw_polygon(pts, 1, "Black", "#464646")
+def wipePath():
+	path = []
+	visited = []
 
 def paramCheck():
 	if heur.get_text()[19:] not in ["Euclidean", "Manhattan", "E^2", "Chebyshev", "Octile", "M.M."]:
@@ -832,11 +828,6 @@ def setheuristicMM():
 def main():
 	global currentWorld
 	currentWorld = world()
-	currentWorld.generateTexture()
-	currentWorld.createHighways()
-	currentWorld.createBlocked()
-	currentWorld.printworld()
-	currentWorld.rotateSnG()
 	global path, visited
 	path = []
 	visited = []
@@ -886,6 +877,7 @@ def main():
 	frame.add_label("")
 	frame.add_button("Save Map", currentWorld.saveCurrentMap, 100)
 	frame.add_button("Load Map", currentWorld.callLoad) 
+	frame.add_button("Wipe Path", wipePath)
 
 	frame.start()
 
