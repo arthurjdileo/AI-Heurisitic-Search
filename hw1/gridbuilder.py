@@ -100,6 +100,12 @@ class world:
 		self.data[start[0],start[1]] = 'S'
 		#assigns the goal index
 		self.data[goal[0],goal[1]] = 'G'
+	
+	def rotateSNGHandler(self):
+		global start, goal
+		self.rotateSnG()
+		self.start = start
+		self.goal = goal
 
 	def printworld(self, force=False):
 		if force:
@@ -837,7 +843,7 @@ def main():
 	visited = []
 	frame = simplegui.create_frame("Heuristic Search", 1280, 960)
 	frame.add_button("Generate Map", generateMap, 100)
-	frame.add_button("Update Start/Goal", currentWorld.rotateSnG,100)
+	frame.add_button("Update Start/Goal", currentWorld.rotateSNGHandler,100)
 	frame.set_draw_handler(draw_handler)
 	global inputWeight
 	inputWeight = frame.add_input("Weight", input_handler, 50)
