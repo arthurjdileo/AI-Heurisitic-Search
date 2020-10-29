@@ -6,6 +6,7 @@ import numpy as np
 import queue
 import math
 import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
+import pygame
 
 class Node:
 	def __init__(self, position, parent):
@@ -42,6 +43,8 @@ class world:
 		self.setSnG()
 
 	def rotateSnG(self):
+		print("before:")
+		print(self.start, self.goal, "\n")
 		self.data[self.start[0], self.start[1]] = '1'
 		self.data[self.goal[0], self.goal[1]] = '1'
 
@@ -88,9 +91,15 @@ class world:
 		if self.data[start[0], start[1]] == '0' or self.data[goal[0], goal[1]] == '0' or self.data[start[0], start[1]] == 'a' or self.data[goal[0], goal[1]] == 'a' or self.data[start[0], start[1]] == 'b' or self.data[goal[0], goal[1]] == 'b':
 			randomize(self)
 		self.setSnG()
+		# self.start = start
+		# self.goal = goal
+		print("after: \n")
+		print(self.start, self.goal, "\n")
 
-
-
+	def rotateSnGHandler(self):
+		self.rotateSnG()
+		self.start = start
+		self.goal = goal
 
 	def setSnG(self):
 		#assigns the start index
@@ -472,7 +481,6 @@ def unload():
 # search
 
 def createPath(parent):
-	print("CREATE PATH")
 	path = set()
 	path.add(parent.position)
 	ptr = parent.parent
@@ -495,9 +503,6 @@ def aStarSearch(world, heuristic, weight):
 	start_node.f = 0
 	openQueue.put((start_node.f, start_node))
 	openList.add(start_node)
-	print(start_node)
-	end_node = Node(tuple((world.goal[0], world.goal[1])), None)
-	print(end_node)
 
 	while not openQueue.empty():
 		# get next in open list and set as current node
@@ -506,19 +511,11 @@ def aStarSearch(world, heuristic, weight):
 			openList.remove(cur[1])
 		except KeyError:
 			print("yep")
-			#print(cur[1].position)
-		# print(cur[1].position)
 		#Node is the second item in the tuple
 		curr_node = cur[1]
 		# print("\n"+ world.data[curr_node.position].decode())
-		# curr_node = 
         #Check if goal 
-		# if world.data[curr_node.position[0], curr_node.position[1]].decode() == 'G':
 		if curr_node.position == tuple(world.goal):
-		# if curr_node.position == world.goal:
-			print(curr_node.position)
-			print(tuple(world.goal))
-			print("\n")
 			return createPath(curr_node.parent), closedToPos(closedList)
 		closedList.add(curr_node)
 		#Generates the current node's 8 (or 4 if highway) possible neighbors
@@ -528,6 +525,7 @@ def aStarSearch(world, heuristic, weight):
 			if next_node in closedList:
 				continue
 			next_node.g = curr_node.g + math.sqrt(pow((next_node.position[0] - curr_node.position[0]), 2) + pow((next_node.position[0] - curr_node.position[0]), 2))
+			# next_node.g = curr_node.g + getCost(world, curr_node, next_node)
 			next_node.h = getHeuristic(world, next_node, heuristic)
 			next_node.f = next_node.g + next_node.h
 			#Check if new node is in the open list, and if it has a lower f
@@ -553,12 +551,9 @@ def closedToPos(closedList):
 	return posList
 
 def getHeuristic(w, node, heuristic):
-	if node == None:
-		print("THE NODE")
 	x1, y1 = node.position[0], node.position[1]
 	x2, y2 = w.goal[0], w.goal[1]
-	if x1 == None or y1 == None:
-		print("The coordinates!")
+
 	if heuristic.lower() == "manhattan":
 		return abs(x1-x2) + abs(y1-y2)
 	elif heuristic.lower() == "euclidean":
@@ -569,18 +564,14 @@ def getHeuristic(w, node, heuristic):
 		return abs(x1-x2) + abs(y1-y2) - min(abs(x1-x2),abs(y1-y2))
 	elif heuristic.lower() == "octile":
 		return abs(x1-x2) + abs(y1-y2) - (math.sqrt(2)-2) * min(abs(x1-x2),abs(y1-y2))
-	elif heuristic.lower() == "mini_manhattan":
-		return (abs(x1-x2) + abs(y1-y2))/4
-	elif heuristic.lower() == "mini_euclidean":
-		return math.sqrt((x1-x2)**2 + (y1-y2)**2)/4
 
 def getCost(world, current, nextCell):
-	currType = world.data[current[0], current[1]].decode()
-	nextType = world.data[nextCell[0], nextCell[0]].decode()
-	currR = current[0]
-	currC = current[1]
-	nextR = nextCell[0]
-	nextC = nextCell[1]
+	currType = world.data[current.position[0], current.position[1]].decode()
+	nextType = world.data[nextCell.position[0], nextCell.position[0]].decode()
+	currR = current.position[0]
+	currC = current.position[1]
+	nextR = nextCell.position[0]
+	nextC = nextCell.position[1]
 	#Boolean value to see if row and col changed
 	changeR = bool((abs(nextR-currR)) > 0)
 	changeC = bool((abs(nextC-currC)) > 0)
@@ -590,8 +581,6 @@ def getCost(world, current, nextCell):
 		return 100000
 	if(nextType == 'S'):
 		return 100000
-	print("Curr: " +currType)
-	print("Next: " +nextType)
 	#Current cell is an unblocked
 	if currType == '1':
 		#Next is unblocked
@@ -737,21 +726,11 @@ def drawMap(canvas):
 				canvas.draw_polygon(pts, 1, "Black", "White")
 			elif currentWorld.data[r, c].decode() == '2':
 				canvas.draw_polygon(pts, 1, "Black", "#9B9898")
-			
-			# Draw path from start to finish
-			elif (r, c) in path:
-				canvas.draw_polygon(pts, 1, "Black", ["#F44336", "#FFCDD2"])
-			# # Draw visited cells
-			# elif (r, c) in self.solution["Visited cells"] and (r, c) not in self.solution["Path"]:
-			# 	canvas.draw_polygon(pts, 1, "Black", ["#2196F3", "#BBDEFB"])
-			# Draw empty cells
-			
-			# Draw walls
 			else:
 				canvas.draw_polygon(pts, 1, "Black", "#464646")
 
 def paramCheck():
-	if heur.get_text()[19:] not in ["Euclidean", "Manhattan", "Sequential"]:
+	if heur.get_text()[19:] not in ["Euclidean", "Manhattan", "E^2", "Chebyshev", "Octile", "M.M."]:
 		heur.set_text("Current Heuristic: Euclidean")
 
 def aStarSolve():
@@ -760,31 +739,53 @@ def aStarSolve():
 		inputWeight.set_text("1")
 	paramCheck()
 	algo.set_text("Current Algorithm: A*")
-	print(heur.get_text()[19:])
 	if heur.get_text()[19:] == "Euclidean":
 		path, visited = aStarSearch(currentWorld, "euclidean", 1)
-		print(visited)
 	elif heur.get_text()[19:] == "Manhattan":
 		path, visited = aStarSearch(currentWorld, "manhattan", 1)
-	elif heur.get_text()[19:] == "Sequential":
-		path, visited = aStarSearch(currentWorld, "sequential", 1)
+	elif heur.get_text()[19:] == "Euclidean Squared":
+		path, visited = aStarSearch(currentWorld, "euclidean_squared", 1)
+	elif heur.get_text()[19:] == "Chebyshev":
+		path, visited = aStarSearch(currentWorld, "Chebyshev", 1)
+	elif heur.get_text()[19:] == "Octile":
+		path, visited = aStarSearch(currentWorld, "octile", 1)
+	elif heur.get_text()[19:] == "Mini Manhattan":
+		path, visited = aStarSearch(currentWorld, "mini_manhattan", 1)
 	else:
 		path, visited = aStarSearch(currentWorld, "euclidean", 1)
-	if not path:
+	if path:
+		status.set_text("Current Status: Path Found")
+		visitedCells.set_text("# of Visited Cells: " + str(len(visited)))
+		pathLen.set_text("Length of Path: " + str(len(path)))
+	else:
 		status.set_text("Current Status: No Path")
+	
 
 
 def weightedAStarSolve():
 	algo.set_text("Current Algorithm: Weighted A*")
 	paramCheck()
-	if heur.get_text() == "Euclidean":
-		pass
-	elif heur.get_text() == "Manhattan":
-		pass
-	elif heur.get_text() == "Sequential":
-		pass
+	weight = inputWeight.get_text()
+	if heur.get_text()[19:] == "Euclidean":
+		path, visited = aStarSearch(currentWorld, "euclidean", weight)
+	elif heur.get_text()[19:] == "Manhattan":
+		path, visited = aStarSearch(currentWorld, "manhattan", weight)
+	elif heur.get_text()[19:] == "E^2":
+		path, visited = aStarSearch(currentWorld, "euclidean_squared", weight)
+	elif heur.get_text()[19:] == "Chebyshev":
+		path, visited = aStarSearch(currentWorld, "Chebyshev", weight)
+	elif heur.get_text()[19:] == "Octile":
+		path, visited = aStarSearch(currentWorld, "octile", weight)
+	elif heur.get_text()[19:] == "M.M.":
+		path, visited = aStarSearch(currentWorld, "mini_manhattan", weight)
 	else:
-		pass
+		path, visited = aStarSearch(currentWorld, "euclidean", weight)
+	if path:
+		status.set_text("Current Status: Path Found")
+		visitedCells.set_text("# of Visited Cells: " + str(len(visited)))
+		pathLen.set_text("Length of Path: " + str(len(path)))
+	else:
+		status.set_text("Current Status: No Path")
 
 def sequentialAStarSolve():
 	algo.set_text("Current Algorithm: Seq. A*")
@@ -799,12 +800,29 @@ def sequentialAStarSolve():
 		pass
 
 #couldn't figure out how to pass param to button_handler
+def resetText():
+	algo.set_text("Current Algorithm: N/A")
+	status.set_text("Current Status: N/A")
+	visitedCells.set_text("# of Visited Cells: N/A")
+	pathLen.set_text("Length of Path: N/A")
 def setheuristicE():
 	heur.set_text("Curent Heuristic: Euclidean")
+	resetText()
 def setheuristicM():
 	heur.set_text("Current Heuristic: Manhattan")
-def setheuristicS():
-	heur.set_text("Current Heuristic: Sequential")
+	resetText()
+def setheuristicES():
+	heur.set_text("Current Heuristic: E^2")
+	resetText()
+def setheuristicC():
+	heur.set_text("Current Heuristic: Chebyshev")
+	resetText()
+def setheuristicO():
+	heur.set_text("Current Heuristic: Octile")
+	resetText()
+def setheuristicMM():
+	heur.set_text("Current Heuristic: M.M.")
+	resetText()
 
 
 def main():
@@ -820,7 +838,7 @@ def main():
 	visited = []
 	frame = simplegui.create_frame("Heuristic Search", FRAME_SIZE, FRAME_SIZE)
 	frame.add_button("Generate Map", generateMap, 100)
-	frame.add_button("Update Start/Goal", currentWorld.setSnG,100)
+	frame.add_button("Update Start/Goal", currentWorld.rotateSnGHandler,100)
 	frame.set_draw_handler(draw_handler)
 	global inputWeight
 	inputWeight = frame.add_input("Weight", input_handler, 50)
@@ -830,7 +848,10 @@ def main():
 	frame.add_label("Heuristic:")
 	frame.add_button("Euclidean", setheuristicE, 100)
 	frame.add_button("Manhattan", setheuristicM, 100)
-	frame.add_button("Sequential", setheuristicS, 100)
+	frame.add_button("Euclidean Squared", setheuristicES, 100)
+	frame.add_button("Chebyshev", setheuristicC, 100)
+	frame.add_button("Octile", setheuristicO, 100)
+	frame.add_button("Mini Manhattan", setheuristicMM, 100)
 
 	frame.add_label("")
 	frame.add_label("Search Algorithm:")
@@ -845,6 +866,18 @@ def main():
 	status = frame.add_label("Current Status: N/A")
 	visitedCells = frame.add_label("# of Visited Cells: N/A")
 	pathLen = frame.add_label("Length of Path: N/A")
+
+	frame.add_label("")
+	frame.add_label("Key:")
+	frame.add_label("Green = Start")
+	frame.add_label("Red = Goal")
+	frame.add_label("White = Unblocked")
+	frame.add_label("Black = Blocked")
+	frame.add_label("Gray = Hard to Traverse")
+	frame.add_label("Light Blue = Unblocked Highway")
+	frame.add_label("Blue = Hard Traverse Highway")
+	frame.add_label("Light Green = Visited")
+	frame.add_label("Green = Path")
 
 	frame.start()
 
