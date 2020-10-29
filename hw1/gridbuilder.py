@@ -535,7 +535,11 @@ def aStarSearch(world, heuristic, weight):
 			if next_node in closedList:
 				continue
 			next_node.g = curr_node.g + math.sqrt(pow((next_node.position[0] - curr_node.position[0]), 2) + pow((next_node.position[0] - curr_node.position[0]), 2))
-			# next_node.g = curr_node.g + getCost(world, curr_node, next_node)
+			# cost = getCost(world, curr_node, next_node)
+			# if cost == None:
+			# 	continue
+			# print("Cost: ", cost)
+			# next_node.g = curr_node.g + cost
 			next_node.h = getHeuristic(world, next_node, heuristic)
 			next_node.f = next_node.g + next_node.h
 			#Check if new node is in the open list, and if it has a lower f
@@ -574,10 +578,16 @@ def getHeuristic(w, node, heuristic):
 		return abs(x1-x2) + abs(y1-y2) - min(abs(x1-x2),abs(y1-y2))
 	elif heuristic.lower() == "octile":
 		return abs(x1-x2) + abs(y1-y2) - (math.sqrt(2)-2) * min(abs(x1-x2),abs(y1-y2))
+	elif heuristic.lower() == "mini_manhattan":
+		return (abs(x1-x2) + abs(y1-y2))/2
 
 def getCost(world, current, nextCell):
 	currType = world.data[current.position[0], current.position[1]].decode()
+	if(currType == 'S'):
+		currType = '1'
 	nextType = world.data[nextCell.position[0], nextCell.position[0]].decode()
+	if(nextType == 'S'):
+		currType = '1'
 	currR = current.position[0]
 	currC = current.position[1]
 	nextR = nextCell.position[0]
@@ -587,10 +597,10 @@ def getCost(world, current, nextCell):
 	changeC = bool((abs(nextC-currC)) > 0)
 	#Sets boolean value for diagonal and horizontalOrVertical (horv)
 	diagonal = changeR and changeC
-	if(nextType == '0'):
-		return 100000
-	if(nextType == 'S'):
-		return 100000
+	'''if(nextType == '0'):
+		return 10000000
+	elif(nextType == 'S'):
+		return 10000000'''
 	#Current cell is an unblocked
 	if currType == '1':
 		#Next is unblocked
@@ -695,7 +705,8 @@ def getCost(world, current, nextCell):
 				return float(1/2)
 			else:
 				return float(math.sqrt(8)/4)
-
+	print(currType, nextType)
+	return None
 
 # gui
 
@@ -708,6 +719,7 @@ def draw_handler(canvas):
 def generateMap():
 	global currentWorld
 	currentWorld = world()
+	wipePath()
 
 def input_handler():
 	pass
@@ -725,6 +737,8 @@ def drawMap(canvas):
 				canvas.draw_polygon(pts, 1, "Black", "#00FF00")
 			elif [col, row] == currentWorld.goal:
 				canvas.draw_polygon(pts, 1, "Black", "#ff0000")
+			elif currentWorld.data[col, row].decode() == '0':
+				canvas.draw_polygon(pts, 1, "Black", "#292929")
 			elif (col, row) in path:
 				canvas.draw_polygon(pts, 1, "Black", "#4CAF50")
 			elif (col, row) in visited:
@@ -733,8 +747,6 @@ def drawMap(canvas):
 				canvas.draw_polygon(pts, 1, "Black", "#add8e6")
 			elif currentWorld.data[col, row].decode() == 'b':
 				canvas.draw_polygon(pts, 1, "Black", "Blue")
-			elif currentWorld.data[col, row].decode() == '0':
-				canvas.draw_polygon(pts, 1, "Black", "#292929")
 			elif currentWorld.data[col, row].decode() == '1':
 				canvas.draw_polygon(pts, 1, "Black", "White")
 			elif currentWorld.data[col, row].decode() == '2':
@@ -763,7 +775,7 @@ def aStarSolve():
 	elif heur.get_text()[19:] == "E^2":
 		path, visited = aStarSearch(currentWorld, "euclidean_squared", 1)
 	elif heur.get_text()[19:] == "Chebyshev":
-		path, visited = aStarSearch(currentWorld, "Chebyshev", 1)
+		path, visited = aStarSearch(currentWorld, "chebyshev", 1)
 	elif heur.get_text()[19:] == "Octile":
 		path, visited = aStarSearch(currentWorld, "octile", 1)
 	elif heur.get_text()[19:] == "M.M.":
