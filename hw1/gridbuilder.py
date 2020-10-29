@@ -33,7 +33,7 @@ class world:
 		self.data = np.chararray(shape=(120, 160))
 		self.data[:] = '1'
 		self.saved = 1
-		load(self)
+		randomize(self)
 		self.start = start
 		self.goal = goal
 		self.hard_travers = hard_travers
@@ -88,7 +88,7 @@ class world:
 			goal = [rowg, colg]
 		
 		if self.data[start[0], start[1]] == '0' or self.data[goal[0], goal[1]] == '0' or self.data[start[0], start[1]] == 'a' or self.data[goal[0], goal[1]] == 'a' or self.data[start[0], start[1]] == 'b' or self.data[goal[0], goal[1]] == 'b':
-			randomize(self)
+			self.rotateSnG()
 		self.setSnG()
 
 	def setSnG(self):
@@ -428,10 +428,12 @@ def randomize(w):
 		colg = randint(139,159)
 		start = [rows, cols]
 		goal = [rowg, colg]
-	
-	if w.data[start[0], start[1]] == '0' or w.data[goal[0], goal[1]] == '0' or w.data[start[0], start[1]] == 'a' or w.data[goal[0], goal[1]] == 'a' or w.data[start[0], start[1]] == 'b' or w.data[goal[0], goal[1]] == 'b':
-		randomize(w)
-
+	print(w.data[start[0], start[1]].decode(), (start[0], start[1]))
+	print(w.data[goal[0], goal[1]].decode(), (goal[0], goal[1]))
+	if w.data[start[0], start[1]].decode() == '0' or w.data[goal[0], goal[1]].decode() == '0' or w.data[start[0], start[1]].decode() == 'a' or w.data[goal[0], goal[1]].decode() == 'a' or w.data[start[0], start[1]].decode() == 'b' or w.data[goal[0], goal[1]].decode() == 'b':
+		print("triggered")
+		w.rotateSnG()
+	w.setSnG()
 
 	global hard_travers
 	hard_travers = []
