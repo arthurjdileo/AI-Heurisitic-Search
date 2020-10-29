@@ -44,7 +44,8 @@ class world:
 		print(self.start, self.data[self.start[0], self.start[1]].decode(), self.goal, self.data[self.goal[0], self.goal[1]].decode())
 
 	def callLoad(self):
-			load(self)
+		load(self)
+		generateMap()
 
 	def rotateSnG(self):
 		self.data[self.start[0], self.start[1]] = '1'
@@ -691,7 +692,8 @@ def getCost(world, current, nextCell):
 
 
 # gui
-FRAME_SIZE = 900
+
+FRAME_SIZE = 960
 WEIGHT = 1
 
 def draw_handler(canvas):
@@ -705,34 +707,36 @@ def input_handler():
 	pass
 
 def drawMap(canvas):
-	w = FRAME_SIZE / 120
+	w = 1280 / 160
+	t = 960 / 120
 	global path, visited
-	for r in range(120):
-		for c in range(160):
-			pts = [(r * w, c * w), ((r + 1) * w, c * w),
-						  ((r + 1) * w, (c + 1) * w), ((r * w), (c + 1) * w)]
+	for col in range(120):
+		for row in range(160):
+			pts = [(row * t, col * w), ((row + 1) * t, col * w),
+						  ((row + 1) * t, (col + 1) * w), ((row * t), (col + 1) * w)]
 			# Draw first and last cell
-			if [r, c] == currentWorld.start:
+			if [col, row] == currentWorld.start:
 				canvas.draw_polygon(pts, 1, "Black", "#00FF00")
-			elif [r, c] == currentWorld.goal:
+			elif [col, row] == currentWorld.goal:
 				canvas.draw_polygon(pts, 1, "Black", "#ff0000")
-			elif (r, c) in path:
+			elif (col, row) in path:
 				canvas.draw_polygon(pts, 1, "Black", "#4CAF50")
-			elif (r, c) in visited:
+			elif (col, row) in visited:
 				canvas.draw_polygon(pts, 1, "Black", "#C8E6C9")
-			elif currentWorld.data[r, c].decode() == 'a':
+			elif currentWorld.data[col, row].decode() == 'a':
 				canvas.draw_polygon(pts, 1, "Black", "#add8e6")
-			elif currentWorld.data[r, c].decode() == 'b':
+			elif currentWorld.data[col, row].decode() == 'b':
 				canvas.draw_polygon(pts, 1, "Black", "Blue")
-			elif currentWorld.data[r, c].decode() == '0':
+			elif currentWorld.data[col, row].decode() == '0':
 				canvas.draw_polygon(pts, 1, "Black", "#292929")
-			elif currentWorld.data[r, c].decode() == '1':
+			elif currentWorld.data[col, row].decode() == '1':
 				canvas.draw_polygon(pts, 1, "Black", "White")
-			elif currentWorld.data[r, c].decode() == '2':
+			elif currentWorld.data[col, row].decode() == '2':
 				canvas.draw_polygon(pts, 1, "Black", "#9B9898")
 			else:
 				canvas.draw_polygon(pts, 1, "Black", "#464646")
 def wipePath():
+	global path, visited
 	path = []
 	visited = []
 
@@ -831,7 +835,7 @@ def main():
 	global path, visited
 	path = []
 	visited = []
-	frame = simplegui.create_frame("Heuristic Search", FRAME_SIZE, FRAME_SIZE)
+	frame = simplegui.create_frame("Heuristic Search", 1280, 960)
 	frame.add_button("Generate Map", generateMap, 100)
 	frame.add_button("Update Start/Goal", currentWorld.rotateSnG,100)
 	frame.set_draw_handler(draw_handler)
@@ -876,8 +880,8 @@ def main():
 
 	frame.add_label("")
 	frame.add_button("Save Map", currentWorld.saveCurrentMap, 100)
-	frame.add_button("Load Map", currentWorld.callLoad) 
-	frame.add_button("Wipe Path", wipePath)
+	frame.add_button("Load Map", currentWorld.callLoad, 100) 
+	frame.add_button("Wipe Path", wipePath, 100)
 
 	frame.start()
 
