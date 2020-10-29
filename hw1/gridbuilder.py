@@ -43,8 +43,6 @@ class world:
 		self.setSnG()
 
 	def rotateSnG(self):
-		print("before:")
-		print(self.start, self.goal, "\n")
 		self.data[self.start[0], self.start[1]] = '1'
 		self.data[self.goal[0], self.goal[1]] = '1'
 
@@ -91,10 +89,6 @@ class world:
 		if self.data[start[0], start[1]] == '0' or self.data[goal[0], goal[1]] == '0' or self.data[start[0], start[1]] == 'a' or self.data[goal[0], goal[1]] == 'a' or self.data[start[0], start[1]] == 'b' or self.data[goal[0], goal[1]] == 'b':
 			randomize(self)
 		self.setSnG()
-		# self.start = start
-		# self.goal = goal
-		print("after: \n")
-		print(self.start, self.goal, "\n")
 
 	def rotateSnGHandler(self):
 		self.rotateSnG()
@@ -743,13 +737,13 @@ def aStarSolve():
 		path, visited = aStarSearch(currentWorld, "euclidean", 1)
 	elif heur.get_text()[19:] == "Manhattan":
 		path, visited = aStarSearch(currentWorld, "manhattan", 1)
-	elif heur.get_text()[19:] == "Euclidean Squared":
+	elif heur.get_text()[19:] == "E^2":
 		path, visited = aStarSearch(currentWorld, "euclidean_squared", 1)
 	elif heur.get_text()[19:] == "Chebyshev":
 		path, visited = aStarSearch(currentWorld, "Chebyshev", 1)
 	elif heur.get_text()[19:] == "Octile":
 		path, visited = aStarSearch(currentWorld, "octile", 1)
-	elif heur.get_text()[19:] == "Mini Manhattan":
+	elif heur.get_text()[19:] == "M.M.":
 		path, visited = aStarSearch(currentWorld, "mini_manhattan", 1)
 	else:
 		path, visited = aStarSearch(currentWorld, "euclidean", 1)
@@ -763,6 +757,7 @@ def aStarSolve():
 
 
 def weightedAStarSolve():
+	global path, visited
 	algo.set_text("Current Algorithm: Weighted A*")
 	paramCheck()
 	weight = inputWeight.get_text()
