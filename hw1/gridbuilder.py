@@ -32,6 +32,7 @@ class world:
 	def __init__(self):
 		self.data = np.chararray(shape=(120, 160))
 		self.data[:] = '1'
+		self.saved = 1
 		load(self)
 		self.start = start
 		self.goal = goal
@@ -90,22 +91,27 @@ class world:
 			randomize(self)
 		self.setSnG()
 
-	def rotateSnGHandler(self):
-		self.rotateSnG()
-		self.start = start
-		self.goal = goal
-
 	def setSnG(self):
 		#assigns the start index
 		self.data[start[0],start[1]] = 'S'
 		#assigns the goal index
 		self.data[goal[0],goal[1]] = 'G'
 
-	def printworld(self):
+	def printworld(self, force=False):
+		if force:
+			with open("world%d.txt" % self.saved, "w+") as f:
+				for row in self.data:
+					f.write(str(row, 'utf-8'))
+					f.write('\n')
+			self.saved += 1
+			return
+
 		with open(input("Please enter the path to output file: "), 'w') as f:
 			for row in self.data:
 				f.write(str(row, 'utf-8'))
 				f.write('\n')
+	def saveCurrentMap(self):
+		self.printworld(True)
 	def createBlocked(self):
 		#assign 20% of total board to blocked
 		for cell in range(3840):
@@ -689,7 +695,13 @@ def draw_handler(canvas):
 	drawMap(canvas)
 
 def generateMap():
-	pass
+	global currentWorld
+	currentWorld.data = np.chararray(shape=(120, 160))
+	currentWorld.data[:] = '1'
+	currentWorld.generateTexture()
+	currentWorld.createHighways()
+	currentWorld.createBlocked()
+	currentWorld.rotateSnG()
 
 def input_handler():
 	pass
@@ -825,7 +837,7 @@ def main():
 	visited = []
 	frame = simplegui.create_frame("Heuristic Search", FRAME_SIZE, FRAME_SIZE)
 	frame.add_button("Generate Map", generateMap, 100)
-	frame.add_button("Update Start/Goal", currentWorld.rotateSnGHandler,100)
+	frame.add_button("Update Start/Goal", currentWorld.rotateSnG,100)
 	frame.set_draw_handler(draw_handler)
 	global inputWeight
 	inputWeight = frame.add_input("Weight", input_handler, 50)
@@ -865,6 +877,9 @@ def main():
 	frame.add_label("Blue = Hard Traverse Highway")
 	frame.add_label("Light Green = Visited")
 	frame.add_label("Green = Path")
+
+	frame.add_label("")
+	frame.add_button("Save Map", currentWorld.saveCurrentMap, 100)
 
 	frame.start()
 
