@@ -519,7 +519,7 @@ def aStarSearch(world, heuristic, weight):
 			print(curr_node.position)
 			print(tuple(world.goal))
 			print("\n")
-			return createPath(curr_node.parent), closedList
+			return createPath(curr_node.parent), closedToPos(closedList)
 		closedList.add(curr_node)
 		#Generates the current node's 8 (or 4 if highway) possible neighbors
 		for nextCell in world.connected_cells(curr_node.position):
@@ -544,7 +544,14 @@ def aStarSearch(world, heuristic, weight):
 				openList.add(next_node)
 				openQueue.put((int(next_node.f), next_node))
 
-	return None, closedList # path not found
+	return None, closedToPos(closedList) # path not found
+
+def closedToPos(closedList):
+	posList = []
+	for node in closedList:
+		posList.append(node.position)
+	return posList
+
 def getHeuristic(w, node, heuristic):
 	if node == None:
 		print("THE NODE")
@@ -713,13 +720,13 @@ def drawMap(canvas):
 						  ((r + 1) * w, (c + 1) * w), ((r * w), (c + 1) * w)]
 			# Draw first and last cell
 			if [r, c] == currentWorld.start:
-				canvas.draw_polygon(pts, 1, "Black", "#66ff00")
+				canvas.draw_polygon(pts, 1, "Black", "#00FF00")
 			elif [r, c] == currentWorld.goal:
 				canvas.draw_polygon(pts, 1, "Black", "#ff0000")
 			elif (r, c) in path:
-				canvas.draw_polygon(pts, 1, "Black", "Purple")
+				canvas.draw_polygon(pts, 1, "Black", "#4CAF50")
 			elif (r, c) in visited:
-				canvas.draw_polygon(pts, 1, "Black", "Orange")
+				canvas.draw_polygon(pts, 1, "Black", "#C8E6C9")
 			elif currentWorld.data[r, c].decode() == 'a':
 				canvas.draw_polygon(pts, 1, "Black", "#add8e6")
 			elif currentWorld.data[r, c].decode() == 'b':
@@ -756,7 +763,7 @@ def aStarSolve():
 	print(heur.get_text()[19:])
 	if heur.get_text()[19:] == "Euclidean":
 		path, visited = aStarSearch(currentWorld, "euclidean", 1)
-		print(path)
+		print(visited)
 	elif heur.get_text()[19:] == "Manhattan":
 		path, visited = aStarSearch(currentWorld, "manhattan", 1)
 	elif heur.get_text()[19:] == "Sequential":
