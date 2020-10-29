@@ -43,6 +43,9 @@ class world:
 		self.createBlocked()
 		self.setSnG()
 
+	def callLoad(self):
+			load(self)
+
 	def rotateSnG(self):
 		self.data[self.start[0], self.start[1]] = '1'
 		self.data[self.goal[0], self.goal[1]] = '1'
@@ -882,6 +885,7 @@ def main():
 
 	frame.add_label("")
 	frame.add_button("Save Map", currentWorld.saveCurrentMap, 100)
+	frame.add_button("Load Map", currentWorld.callLoad) 
 
 	frame.start()
 
