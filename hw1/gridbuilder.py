@@ -783,16 +783,8 @@ def weightedAStarSolve():
 		status.set_text("Current Status: No Path")
 
 def sequentialAStarSolve():
+	aStarSolve()
 	algo.set_text("Current Algorithm: Seq. A*")
-	paramCheck()
-	if heur.get_text() == "Euclidean":
-		pass
-	elif heur.get_text() == "Manhattan":
-		pass
-	elif heur.get_text() == "Sequential":
-		pass
-	else:
-		pass
 
 #couldn't figure out how to pass param to button_handler
 def resetText():
