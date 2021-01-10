@@ -499,6 +499,30 @@ def createPath(parent):
 		ptr = ptr.parent
 	return path
 
+def uniformCostSearch(world, heuristic):
+	visited = set()
+	pq = queue.PriorityQueue()
+	start_node = Node(tuple((world.start[0], world.start[1])), None)
+	pq.put((start_node.f, start_node))
+
+	while not pq.empty():
+		cur = pq.get()
+		curr_node = cur[1]
+		if curr_node not in visited:
+			visited.add(curr_node)
+
+			if curr_node.position == tuple(world.goal):
+				return createPath(curr_node.parent), closedToPos(visited)
+			for nextCell in world.connected_cells(curr_node.position):
+				nextNode = Node(nextCell, curr_node)
+				if nextNode not in visited:
+					cost = getCost(world, curr_node, nextNode)
+					nextNode.g = curr_node.g + cost
+					nextNode.h = getHeuristic(world, nextNode, heuristic)
+					nextNode.f = nextNode.g + nextNode.h
+					pq.put((nextNode.f, nextNode))
+	return None
+
 def aStarSearch(world, heuristic, weight):
 	# when weight == 1: normal A*
 	# when weight > 1: weighted A*
@@ -788,7 +812,30 @@ def aStarSolve():
 	else:
 		status.set_text("Current Status: No Path")
 	
-
+def ucsSolve():
+	global path, visited
+	algo.set_text("Current Algorithm: UCS")
+	paramCheck()
+	if heur.get_text()[19:] == "Euclidean":
+		path, visited = uniformCostSearch(currentWorld, "euclidean")
+	elif heur.get_text()[19:] == "Manhattan":
+		path, visited = uniformCostSearch(currentWorld, "manhattan")
+	elif heur.get_text()[19:] == "E^2":
+		path, visited = uniformCostSearch(currentWorld, "euclidean_squared")
+	elif heur.get_text()[19:] == "Chebyshev":
+		path, visited = uniformCostSearch(currentWorld, "chebyshev")
+	elif heur.get_text()[19:] == "Octile":
+		path, visited = uniformCostSearch(currentWorld, "octile")
+	elif heur.get_text()[19:] == "M.M.":
+		path, visited = uniformCostSearch(currentWorld, "mini_manhattan")
+	else:
+		path, visited = uniformCostSearch(currentWorld, "euclidean")
+	if path:
+		status.set_text("Current Status: Path Found")
+		visitedCells.set_text("# of Visited Cells: " + str(len(visited)))
+		pathLen.set_text("Length of Path: " + str(len(path)))
+	else:
+		status.set_text("Current Status: No Path")
 
 def weightedAStarSolve():
 	global path, visited
@@ -871,6 +918,7 @@ def main():
 
 	frame.add_label("")
 	frame.add_label("Search Algorithm:")
+	frame.add_button("UCS", ucsSolve, 100)
 	frame.add_button("A*", aStarSolve, 100)
 	frame.add_button("Weighted A*", weightedAStarSolve, 100)
 	frame.add_button("Sequential A*", sequentialAStarSolve, 100)
