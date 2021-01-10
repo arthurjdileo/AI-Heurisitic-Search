@@ -534,14 +534,13 @@ def aStarSearch(world, heuristic, weight):
 			#If node is in the closed list move on
 			if next_node in closedList:
 				continue
-			next_node.g = curr_node.g + math.sqrt(pow((next_node.position[0] - curr_node.position[0]), 2) + pow((next_node.position[0] - curr_node.position[0]), 2))
-			# cost = getCost(world, curr_node, next_node)
+			# next_node.g = curr_node.g + math.sqrt(pow((next_node.position[0] - curr_node.position[0]), 2) + pow((next_node.position[0] - curr_node.position[0]), 2))
+			cost = getCost(world, curr_node, next_node)
 			# if cost == None:
 			# 	continue
-			# print("Cost: ", cost)
-			# next_node.g = curr_node.g + cost
+			next_node.g = curr_node.g + cost
 			next_node.h = getHeuristic(world, next_node, heuristic)
-			next_node.f = next_node.g + next_node.h
+			next_node.f = next_node.g + (float(weight) * next_node.h)
 			#Check if new node is in the open list, and if it has a lower f
 			if next_node in openList:
 				for node in openList:
@@ -585,9 +584,9 @@ def getCost(world, current, nextCell):
 	currType = world.data[current.position[0], current.position[1]].decode()
 	if(currType == 'S'):
 		currType = '1'
-	nextType = world.data[nextCell.position[0], nextCell.position[0]].decode()
-	if(nextType == 'S'):
-		currType = '1'
+	nextType = world.data[nextCell.position[0], nextCell.position[1]].decode()
+	if(nextType == 'S' or nextType == 'G'):
+		nextType = '1'
 	currR = current.position[0]
 	currC = current.position[1]
 	nextR = nextCell.position[0]
@@ -597,10 +596,10 @@ def getCost(world, current, nextCell):
 	changeC = bool((abs(nextC-currC)) > 0)
 	#Sets boolean value for diagonal and horizontalOrVertical (horv)
 	diagonal = changeR and changeC
-	'''if(nextType == '0'):
-		return 10000000
-	elif(nextType == 'S'):
-		return 10000000'''
+	# if(nextType == '0'):
+	# 	return -1
+	# elif(nextType == 'S'):
+	# 	return 10000000
 	#Current cell is an unblocked
 	if currType == '1':
 		#Next is unblocked
