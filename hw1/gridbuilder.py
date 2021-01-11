@@ -7,6 +7,7 @@ import queue
 import math
 import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
 import pygame
+import time
 
 class Node:
 	def __init__(self, position, parent):
@@ -744,6 +745,9 @@ def generateMap():
 	currentWorld = world()
 	wipePath()
 
+def getMap():
+	return world()
+
 def input_handler():
 	pass
 
@@ -863,6 +867,46 @@ def weightedAStarSolve():
 	else:
 		status.set_text("Current Status: No Path")
 
+def generateBenchmark():
+	global currentWorld
+	worlds = []
+	# pathAvg = dict()
+	# visitedAvg = dict()
+	for i in range(49):
+		worlds.append(getMap())
+	total = dict()
+	for algo in ["UCS", "A*", "A*W1.5", "A*W2"]:
+		timeAvg = dict()
+		for h in ["euclidean", "manhattan", "chebyshev", "octile", "mini_manhattan"]:
+			# totalPathLen = 0
+			# totalVisited = 0
+			avgTime = 0
+			for world in worlds:
+				s = time.time()
+				if algo == "UCS":
+					path, visited = uniformCostSearch(world, h)
+				elif algo == "A*":
+					path, visited = aStarSearch(world, h, 1)
+				elif algo == "A*W1.5":
+					path, visited = aStarSearch(world, h, 1.5)
+				elif algo == "A*W2":
+					path, visited = aStarSearch(world, h, 2)
+				e = time.time()
+				avgTime += (e-s)*1000
+				# totalPathLen+=len(path)
+				# totalVisited+=len(visited)
+			# pathAvg[h] = totalPathLen/50
+			# visitedAvg[h] = totalVisited/50
+			timeAvg[h] = avgTime/50
+		total[algo] = timeAvg
+	print(total)
+
+
+	# print(pathAvg)
+	# print(visitedAvg)
+	print(timeAvg)
+
+
 def sequentialAStarSolve():
 	aStarSolve()
 	algo.set_text("Current Algorithm: Seq. A*")
@@ -899,6 +943,8 @@ def main():
 	global path, visited
 	path = []
 	visited = []
+	# generateBenchmark()
+	return
 	frame = simplegui.create_frame("Heuristic Search", 1280, 960)
 	frame.add_button("Generate Map", generateMap, 100)
 	frame.add_button("Update Start/Goal", currentWorld.rotateSNGHandler,100)
