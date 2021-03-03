@@ -121,8 +121,10 @@ class world:
 			for row in self.data:
 				f.write(str(row, 'utf-8'))
 				f.write('\n')
+
 	def saveCurrentMap(self):
 		self.printworld(True)
+
 	def createBlocked(self):
 		#assign 20% of total board to blocked
 		for cell in range(3840):
@@ -133,6 +135,7 @@ class world:
 				continue
 			else:
 				self.data[row,col] = '0'
+
 	def in_bounds(self, cell):
 		x = cell[0]
 		y = cell[1]
@@ -140,6 +143,7 @@ class world:
 			return True
 		else:
 			return False
+
 	def connected_cells(self, cell):
 		#cell is a list [row, col]
 		x = int(cell[0])
@@ -155,6 +159,7 @@ class world:
 			if self.in_bounds((row,col)) and self.data[row,col].decode() != '0' and self.data[row,col].decode() != 'S':
 				connected_cells.append(tuple((row,col)))
 		return connected_cells
+
 	def generateTexture(self):
 		#Start, Goal, and hard_travers can all be found in load as global variables
 		#randonly assign hard to traverse cells to the 31x31 grid surrounding the centers in hard_travers
@@ -530,10 +535,7 @@ def aStarSearch(world, heuristic, weight):
 	closedList = set() # collection of expanded nodes
 	openQueue = queue.PriorityQueue() # collection of all generated nodes
 	openList = set()
-	#costPerCell = {} # collection of cost from start to specific node
-	#costPerCell[tuple(world.start)] = 0
 
-	#closedList.add(tuple(world.start))
 	start_node = Node(tuple((world.start[0], world.start[1])), None)
 	start_node.f = 0
 	openQueue.put((start_node.f, start_node))
@@ -548,7 +550,6 @@ def aStarSearch(world, heuristic, weight):
 			print("yep")
 		#Node is the second item in the tuple
 		curr_node = cur[1]
-		# print("\n"+ world.data[curr_node.position].decode())
         #Check if goal 
 		if curr_node.position == tuple(world.goal):
 			return createPath(curr_node.parent), closedToPos(closedList)
@@ -559,10 +560,7 @@ def aStarSearch(world, heuristic, weight):
 			#If node is in the closed list move on
 			if next_node in closedList:
 				continue
-			# next_node.g = curr_node.g + math.sqrt(pow((next_node.position[0] - curr_node.position[0]), 2) + pow((next_node.position[0] - curr_node.position[0]), 2))
 			cost = getCost(world, curr_node, next_node)
-			# if cost == None:
-			# 	continue
 			next_node.g = curr_node.g + cost
 			next_node.h = getHeuristic(world, next_node, heuristic)
 			next_node.f = next_node.g + (float(weight) * next_node.h)
@@ -621,10 +619,7 @@ def getCost(world, current, nextCell):
 	changeC = bool((abs(nextC-currC)) > 0)
 	#Sets boolean value for diagonal and horizontalOrVertical (horv)
 	diagonal = changeR and changeC
-	# if(nextType == '0'):
-	# 	return -1
-	# elif(nextType == 'S'):
-	# 	return 10000000
+
 	#Current cell is an unblocked
 	if currType == '1':
 		#Next is unblocked
